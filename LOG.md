@@ -19,13 +19,17 @@ Detailed setup for windows will be provided later.
 
 Using the [pysftp](http://pysftp.readthedocs.io/en/release_0.2.9/) library 
 (soft wrapper around paramiko lib) for establishing connection with the SFTP 
-server.
+server. 
+
+In this module we have used a wrapper around pysftp, so that even if the next
+update was to break the sftpconn.py module, the whole unit won't be affected.
 
 **Without SSH keys**
 
     # connection options
     cnopts = pysftp.CnOpts()
     cnopts.hostkeys = None
+    # NOTE: cnopts.compression is False (by default), assign True to enable it
 
     # establish connection to the remote SFTP server
     with pysftp.Connection(host='...', username='...', password='...', cnopts=cnopts) as sftp:
