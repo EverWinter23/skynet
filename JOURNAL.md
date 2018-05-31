@@ -41,3 +41,4 @@ Internship Journal.
 + Implemented sftp protocol and tested it on localhost SFTP server.
 + Was able to upload and download files on the SFTP server.
 + Implemented [sftpconn.py](https://bitbucket.org/EverWinter23/skynet/src/dev/lib/sftpcon.py) module to maintain SSH connection to the remote SFTP server.
++ Started working on **mapping** a local foler to a remote folder on SFTP server.
