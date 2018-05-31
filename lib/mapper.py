@@ -7,7 +7,7 @@ import posixpath
 # for native os
 import os
 
-import logger
+from logger import logger
 
 class Mapper:
     """
@@ -48,10 +48,24 @@ class Mapper:
             logger.error("{} is not a vaild path.".format(self.local_base))
             exit()
 
-        self.remote_base = posixpath.join(remote_base, remote_dir)
+        self.remote_base = posixpath.join(remote_root, remote_dir)
         
-        logger.info("local base: {}".format(local_base))
-        logger.info("remote base: {}".format(remote_base))
-        logger.info("Changes in-> \'{}\' will be reflected in here-> \'{}\'".format(
-            local_base, remote_base))
-                
+        logger.info("local_base: {}".format(self.local_base))
+        logger.info("remote_base: {}".format(self.remote_base))
+        logger.info("Changes in-> \'{}\' will be reflected here-> \'{}\'".format(
+            self.local_base, self.remote_base))
+
+def main():
+    local_root = '/home/frost'
+    local_dir = 'Code/tech-crunch'
+    # since it's a local host -> won't begin with '/'
+    remote_root = 'localhost'
+    remote_dir = 'Documents'
+    mapper = Mapper(local_root, local_dir, remote_root, remote_dir)
+
+# test module
+if __name__ == '__main__':
+    main()
+
+
+
