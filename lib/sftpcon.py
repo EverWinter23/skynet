@@ -2,12 +2,12 @@
 31st may 2018 thursday
 '''
 
-import pysftp, logging
+import pysftp, logging, os
 
 # setup logging
 logFormat='%(levelname)s: %(message)s'
 logging.basicConfig(filename='skynet.log',level=logging.DEBUG, 
-                    filemode='w', format=logFormat)
+                    filemode='a', format=logFormat)
 
 logger = logging.getLogger('skynet')
 
@@ -95,11 +95,30 @@ class SFTPCon:
 
 def main():
     # test settings
+    import time
+    start_time = time.time()
+    
     hostname = 'localhost'
     username = 'frost'
     password = 'finch75'
+
+    local_base = 'local_dir'
+    remote_base = 'home/frost/remote_dir'
     conn = SFTPCon(host=hostname, username=username, password=password)
-    conn.ssh_conn.get('/home/frost/k.txt')
+    
+    try:
+        conn.ssh_conn.put_r(local_path, remote_path)
+    except:
+        conn.ssh_conn.mkdir(remote_path)
+        conn.ssh_conn.put_r(local_path, remote_path)
+
+
+    end_time = time.time()
+    print('total time to transfer 12MB = {}s.'.format(end_time - start_time))
+
+def get_remote_path(self, local_path):
+    remote_relative = local_path[self._local_base_length:]
+    return self._remote_base + remote_relative
 
 # test module
 if __name__ == '__main__':
