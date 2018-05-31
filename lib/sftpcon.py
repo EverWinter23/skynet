@@ -2,14 +2,8 @@
 31st may 2018 thursday
 '''
 
-import pysftp, logging, os
-
-# setup logging
-logFormat='%(levelname)s: %(message)s'
-logging.basicConfig(filename='skynet.log',level=logging.DEBUG, 
-                    filemode='a', format=logFormat)
-
-logger = logging.getLogger('skynet')
+import pysftp, os
+from logger import logger
 
 class SFTPCon:
     """
