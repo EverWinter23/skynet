@@ -25,3 +25,18 @@ Internship Journal.
     PROCESSES will follow a similar layout. Processes will also have a similar decorator, and will be registered with a similar function.
 
     FILE TRANSFER will be handled using 'sftp' (SSH FTP) module.
+
+### Wednesday 30th May 2018
++ Attended the general meeting.
+
+    #### MODULE ARCHITECTURE
+
+    Watchdog module can be used to monitor any file/directory events, such as modification, deletion, creation.
+
+    Using watchdog and sftp we could even make the process resume, from the position where it was last paused/terminated (Similar to dropbox sync).
+    
+    Also, to provide a control from skylark app, to pause the upload, we could use the concept of shared memory between the two processes, which would not only allow the module to work independently as a daemon/process, but will also allow the skylark app to gain access to the pause functionality.
+
+### Thursday 31st May 2018
++ Implemented sftp protocol and tested it on localhost SFTP server.
++ Was able to upload and download files o the SFTP server.
