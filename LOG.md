@@ -22,7 +22,8 @@ Using the [pysftp](http://pysftp.readthedocs.io/en/release_0.2.9/) library
 server. 
 
 In this module we have used a wrapper around pysftp, so that even if the next
-update was to break the sftpconn.py module, the whole unit won't be affected.
+update of pysftp was to break the sftpcon.py module, skynet won't be affected.
+Changes will only be needed to apply to the sftpcon.py module.
 
 **Without SSH keys**
 
