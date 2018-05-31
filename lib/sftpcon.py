@@ -63,6 +63,8 @@ class SFTPCon:
         logger.info('private_key_password: {}'.format(private_key_password))
         logger.info('compression: {}'.format(compression))
         logger.info('defaultpath: {}'.format(default_path))
+
+        self.ssh_prefix = username + '@' + password
         
         if password == '':
             logger.debug('No password provided, using key auth...')
