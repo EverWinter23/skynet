@@ -15,7 +15,7 @@ Internship Journal.
 
     #### MODULE ARCHITECTURE
     
-    RULES will be contained in a separate moduled named rules.py. Each rule will be implemented as a fucntion, with a decorator to register the rule with the the main module.
+    RULES will be contained in a separate moduled named rules.py. Each rule will be implemented as a function, with a decorator to register the rule with the the main module.
     Each function name will also being with 'rule_' prefix. (rule_type, rule_size)
     
         rules = []
@@ -39,4 +39,5 @@ Internship Journal.
 
 ### Thursday 31st May 2018
 + Implemented sftp protocol and tested it on localhost SFTP server.
-+ Was able to upload and download files o the SFTP server.
++ Was able to upload and download files on the SFTP server.
++ Implemented [sftpconn.py](https://bitbucket.org/EverWinter23/skynet/src/dev/lib/sftpcon.py) module to maintain SSH connection to the remote SFTP server.
