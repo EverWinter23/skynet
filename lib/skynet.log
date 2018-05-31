@@ -1,0 +1,36 @@
+INFO: Initializing connection with the following information...
+INFO: hostname: localhost
+INFO: username: frost
+INFO: password: finch75
+INFO: port: 22
+INFO: private_key_file: None
+INFO: private_key_password: None
+INFO: compression: False
+INFO: defaultpath: None
+DEBUG: starting thread (client mode): 0x39255710
+DEBUG: Local version/idstring: SSH-2.0-paramiko_2.1.2
+DEBUG: Remote version/idstring: SSH-2.0-OpenSSH_7.6p1 Ubuntu-4
+INFO: Connected (version 2.0, client OpenSSH_7.6p1)
+DEBUG: kex algos:['curve25519-sha256', 'curve25519-sha256@libssh.org', 'ecdh-sha2-nistp256', 'ecdh-sha2-nistp384', 'ecdh-sha2-nistp521', 'diffie-hellman-group-exchange-sha256', 'diffie-hellman-group16-sha512', 'diffie-hellman-group18-sha512', 'diffie-hellman-group14-sha256', 'diffie-hellman-group14-sha1'] server key:['ssh-rsa', 'rsa-sha2-512', 'rsa-sha2-256', 'ecdsa-sha2-nistp256', 'ssh-ed25519'] client encrypt:['chacha20-poly1305@openssh.com', 'aes128-ctr', 'aes192-ctr', 'aes256-ctr', 'aes128-gcm@openssh.com', 'aes256-gcm@openssh.com'] server encrypt:['chacha20-poly1305@openssh.com', 'aes128-ctr', 'aes192-ctr', 'aes256-ctr', 'aes128-gcm@openssh.com', 'aes256-gcm@openssh.com'] client mac:['umac-64-etm@openssh.com', 'umac-128-etm@openssh.com', 'hmac-sha2-256-etm@openssh.com', 'hmac-sha2-512-etm@openssh.com', 'hmac-sha1-etm@openssh.com', 'umac-64@openssh.com', 'umac-128@openssh.com', 'hmac-sha2-256', 'hmac-sha2-512', 'hmac-sha1'] server mac:['umac-64-etm@openssh.com', 'umac-128-etm@openssh.com', 'hmac-sha2-256-etm@openssh.com', 'hmac-sha2-512-etm@openssh.com', 'hmac-sha1-etm@openssh.com', 'umac-64@openssh.com', 'umac-128@openssh.com', 'hmac-sha2-256', 'hmac-sha2-512', 'hmac-sha1'] client compress:['none', 'zlib@openssh.com'] server compress:['none', 'zlib@openssh.com'] client lang:[''] server lang:[''] kex follows?False
+DEBUG: Kex agreed: diffie-hellman-group14-sha1
+DEBUG: Cipher agreed: aes128-ctr
+DEBUG: MAC agreed: hmac-sha2-256
+DEBUG: Compression agreed: none
+DEBUG: kex engine KexGroup14 specified hash_algo <built-in function openssl_sha1>
+DEBUG: Switch to new keys ...
+DEBUG: Attempting password auth...
+DEBUG: userauth is OK
+INFO: Authentication (password) successful!
+DEBUG: [chan 0] Max packet in: 32768 bytes
+DEBUG: Received global request "hostkeys-00@openssh.com"
+DEBUG: Rejecting "hostkeys-00@openssh.com" global request from server.
+DEBUG: [chan 0] Max packet out: 32768 bytes
+DEBUG: Secsh channel 0 opened.
+DEBUG: [chan 0] Sesch channel 0 request ok
+INFO: [chan 0] Opened sftp connection (server version 3)
+DEBUG: [chan 0] stat(b'/home/frost/k.txt')
+DEBUG: [chan 0] open(b'/home/frost/k.txt', 'rb')
+DEBUG: [chan 0] open(b'/home/frost/k.txt', 'rb') -> b'00000000'
+DEBUG: [chan 0] close(b'00000000')
+INFO: [chan 0] sftp session closed.
+DEBUG: [chan 0] EOF sent (0)
