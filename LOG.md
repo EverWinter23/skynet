@@ -5,8 +5,8 @@ Before using SFTP protocol, we need to setup the SFTP server using SSH.
 
 **Linux**
 
-By default Linux has `ssh` pre-installed for outgoing connections, but it
-does not have `ssh-server` for incoming connections.
+By default Linux has `ssh` pre-installed for outgoing connections, but it does
+not have `ssh-server` for incoming connections.
 
     sudo apt install openssh-server
 `ssh-server` by default runs on port 22.
@@ -44,3 +44,55 @@ Changes will only be needed to apply to the sftpcon.py module.
 **With SSH keys**
 
 Detailed setup for SSH keys will be provided later.
+
+## Monitoring the local dir for changes
+
+watcher.py module Watches a dir for any changes within that dir for any file 
+system event (create, delete, rename, move etc...) and takes appropriate action.
+
+Implemented using the [watchdog](https://pythonhosted.org/watchdog/) library
+which has the following two classes for handling any file system events:
+
+**Observer** A thread that schedules watching directories and dispatches
+calls to event handlers to take appropriate action.
+
+**Handler** Handles the actual execution of the action taken by ovveriding
+methods.
+
+### NOTE: Handling the file system events
+
+**Directory Modification**
+
+The mtime (modification time) of the directory changes only when a file or a 
+subdirectory is added, removed or renamed.
+
+Modifying the contents of a file within the directory does not change the 
+directory itself, nor does updating the modified times of a file or a subdir.
+Thus, if a dir is modified , no action will be taken. However, if a file is 
+modified, we will send a the whole file, which will be overwritten in the remote 
+dir.
+
+**File Modification**
+
+Sending the whole file is a viable option, because:
++ Images have small sizes.
++ Videos will not be modified - video processing will be done by the processing
+    team. 
+
+**Resource Creation**
+
+If a dir is created in the dir being monitored, there is no need to take any 
+action for it. It will automatically be created on the remote SFTP server if it 
+contains any file during the file transer. 
+
+If a file is created, then we'll transfer that file.
+
+**Resource Deletion**
+
+If a resource (file/dir) is deleted in the local dir which is being monitored, we 
+will only delete that file if it is present on the remote dir only if this complete-sync mode is on.
+
+complete-sync[True] The remote dir will be a true reflection of the local dir
+
+complete-sync[False] The remote dir will retain the files which have been deleted
+in the local dir.
