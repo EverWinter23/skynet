@@ -55,6 +55,35 @@ class Mapper:
         logger.info("Changes in-> \'{}\' will be reflected here-> \'{}\'".format(
             self.local_base, self.remote_base))
 
+    """
+    TODO: Add windows support
+    Maps a local path in the dir being monitored to a remote path 
+    on the SFTP server to reflect the changes.
+
+    parameters
+        local_path
+            the FULL path of the resource on the local filesystem
+
+    returns
+        remote_path
+            the FULL path of the resource on the remote filesystem
+    """
+    def map_to_remote_path(local_path):
+        # strips the local_base from the local_path to get the relative path
+        # Example->
+        #   local_base = Stuff
+        #   remote_base = Sync
+        #   local_path = Stuff/tech-crunch/file.txt
+        #   relative_path = tech-crunch/file.txt
+        #   remote_path = Sync/tech-crunch/file.txt
+        relative_path = local_path[len(self.local_base)]
+        remote_path = self.remote_base + relative_path
+
+        logger.info("mapped local_path->\'{}\' to remote_path->\'{}\'".format(
+            local_path, remote_path))
+            
+        return remote_path
+
 def main():
     local_root = '/home/frost'
     local_dir = 'Code/tech-crunch'
