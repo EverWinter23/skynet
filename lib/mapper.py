@@ -68,7 +68,7 @@ class Mapper:
         remote_path
             the FULL path of the resource on the remote filesystem
     """
-    def map_to_remote_path(local_path):
+    def map_to_remote_path(self, local_path):
         # strips the local_base from the local_path to get the relative path
         # Example->
         #   local_base = Stuff
@@ -76,7 +76,7 @@ class Mapper:
         #   local_path = Stuff/tech-crunch/file.txt
         #   relative_path = tech-crunch/file.txt
         #   remote_path = Sync/tech-crunch/file.txt
-        relative_path = local_path[len(self.local_base)]
+        relative_path = local_path[len(self.local_base):]
         remote_path = self.remote_base + relative_path
 
         logger.info("mapped local_path->\'{}\' to remote_path->\'{}\'".format(
