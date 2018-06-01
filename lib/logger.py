@@ -6,7 +6,7 @@ import logging
 
 # setup logging
 logFormat='%(levelname)s: %(message)s'
-logging.basicConfig(filename='skynet.log',level=logging.DEBUG, 
+logging.basicConfig(filename='skynet.log',level=logging.INFO, 
                     filemode='w', format=logFormat)
 
 logger = logging.getLogger('skynet')
