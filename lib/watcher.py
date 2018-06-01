@@ -39,7 +39,7 @@ class Watcher(FileSystemEventHandler):
         logger.info("created: {}".format(event.src_path))
 
         if not isinstance(event, DirCreatedEvent):
-            logger.infor("sending: {}".format(event.src_path))
+            logger.info("sending: {}".format(event.src_path))
             self.handler.send_resource(event.src_path)
 
     """
@@ -79,8 +79,8 @@ class Watcher(FileSystemEventHandler):
     def on_modified(self, event):
         logger.info("modified: {}".format(event.src_path))
 
-        if not isinstance(event DirModifiedEvent):
-            logger.infor("sending: {}".format(event.src_path))
+        if not isinstance(event, DirModifiedEvent):
+            logger.info("sending: {}".format(event.src_path))
             self.handler.send_resource(event.src_path)
     
     """
