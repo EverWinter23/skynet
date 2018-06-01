@@ -26,7 +26,7 @@ class SFTPCon:
             path of the file containing the private SSH key
 
         private_key_pass:str
-            password to use, if private_key is encrypted.
+            password to use, if private_key is encrypted
 
         compression:boolean
             default False, use True to enable compression
@@ -45,7 +45,7 @@ class SFTPCon:
         if private_key_file is None:
             cnopts.hostkeys = None
 
-        logger.info('Initializing connection with the following information...')
+        logger.info('initializing connection with the following information...')
         logger.info('hostname: {}'.format(host))
         logger.info('username: {}'.format(username))
         logger.info('password: {}'.format(password))
@@ -57,7 +57,7 @@ class SFTPCon:
         self.ssh_prefix = username + '@' + password
         
         if password == '':
-            logger.debug('No password provided, using key auth...')
+            logger.debug('no password provided, using key auth...')
             try:
                 self.ssh_conn = pysftp.Connection(host, username=username, port=port, 
                                                   private_key_file = private_key_file,
@@ -65,9 +65,9 @@ class SFTPCon:
                                                   cnopts=cnopts)
 
             except Exception as error:
-                logger.debug('Key auth failed...')
-                logger.error('Cause: {}'.format(error))
-                logger.info('Please check the config file...')
+                logger.debug('key auth failed...')
+                logger.error('cause: {}'.format(error))
+                logger.info('please check the config file...')
                 exit()
 
         if self.ssh_conn is None:
@@ -75,10 +75,10 @@ class SFTPCon:
                 self.ssh_conn = pysftp.Connection(host, username=username, port=port,
                                                   password = password, cnopts=cnopts)
             except Exception as error:
-                logger.debug('Failed to connect to SFTP server...')
-                logger.error('Cause: {}'.format(error))
-                logger.info('Please check the config file...')
-                logger.info('Please ensure that SFTP server is running...')
+                logger.debug('failed to connect to SFTP server...')
+                logger.error('cause: {}'.format(error))
+                logger.info('please check the config file...')
+                logger.info('please ensure that SFTP server is running...')
                 exit()
 
 
