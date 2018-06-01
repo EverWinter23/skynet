@@ -1,7 +1,7 @@
 '''
 1st june 2018 friday
 '''
-
+from logger import logger
 from watchdog.observers import Observer
 from watchdog.events import FileSystemEventHandler
 from watchdog.events import DirCreatedEvent
@@ -18,7 +18,7 @@ class Watcher(FileSystemEventHandler):
         handler: Handler
             to actually handle the transfers, and mimic them 
             on the SFTP server.
-        TODO
+        TODO: docstring
         complete_sync: boolean
     """
     def __init__(self, handler, complete_sync = False, **kwargs):
@@ -36,8 +36,11 @@ class Watcher(FileSystemEventHandler):
         if it contains any file.          
     """
     def on_created(self, event):
+        logger.info("created: {}".format(event.src_path))
+
         if not isinstance(event, DirCreatedEvent):
-            self.handler.send_file(event.src_path)
+            logger.infor("sending: {}".format(event.src_path))
+            self.handler.send_resource(event.src_path)
 
     """
     Called when a file or dir is deleted.
@@ -47,7 +50,10 @@ class Watcher(FileSystemEventHandler):
         is turned on.
     """ 
     def on_deleted(self, event):
+        logger.info("deleted: {}".format(event.src_path))
+        
         if self.complete_sync:
+            logger.infor("deleting: {}".format(event.src_path))
             self.handler.delete_resource(event.src_path)
     
     """
@@ -71,12 +77,17 @@ class Watcher(FileSystemEventHandler):
                by the processing team. 
     """
     def on_modified(self, event):
+        logger.info("modified: {}".format(event.src_path))
+
         if not isinstance(event DirModifiedEvent):
-            self.handler.send_file(event.src_path)
+            logger.infor("sending: {}".format(event.src_path))
+            self.handler.send_resource(event.src_path)
     
     """
     Called when a file or dir is renamed or moved.
     """
     def on_moved(self, event):
+        logger.info("moved: {}".format(event.src_path))
+        logger.info("moving: {}".format(event.src_path))
         self.handler.move_resource(event._src_path, event.dest_path)
         
