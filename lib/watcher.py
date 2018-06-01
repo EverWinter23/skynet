@@ -61,7 +61,7 @@ class Watcher(FileSystemEventHandler):
         does not change the directory itself, nor does updating 
         the modified times of a file or a subdirectory.
 
-        Thus, ff a dir is modified , no action will be taken.
+        Thus, if a dir is modified , no action will be taken.
         However, if a file is modified, we will send a the whole
         file, which will be overwritten in the remote dir.
 
