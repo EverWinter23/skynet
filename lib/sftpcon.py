@@ -30,13 +30,10 @@ class SFTPCon:
 
         compression:boolean
             default False, use True to enable compression
-
-        default_path
-            set a default path upon connection.
     """
     def __init__(self, host, username = None, password = None, port = 22, 
                  private_key_file = None, private_key_password = None,
-                 compression = False, default_path = None):
+                 compression = False):
         
         self.ssh_prefix = None
         self.ssh_conn = None
@@ -56,7 +53,6 @@ class SFTPCon:
         logger.info('private_key_file: {}'.format(private_key_file))
         logger.info('private_key_password: {}'.format(private_key_password))
         logger.info('compression: {}'.format(compression))
-        logger.info('defaultpath: {}'.format(default_path))
 
         self.ssh_prefix = username + '@' + password
         
@@ -66,7 +62,7 @@ class SFTPCon:
                 self.ssh_conn = pysftp.Connection(host, username=username, port=port, 
                                                   private_key_file = private_key_file,
                                                   private_key_password = private_key_password,
-                                                  cnopts=cnopts, default_path = default_path)
+                                                  cnopts=cnopts)
 
             except Exception as error:
                 logger.debug('Key auth failed...')
@@ -77,8 +73,7 @@ class SFTPCon:
         if self.ssh_conn is None:
             try:
                 self.ssh_conn = pysftp.Connection(host, username=username, port=port,
-                                                  password = password,
-                                                  cnopts=cnopts, default_path = default_path)
+                                                  password = password, cnopts=cnopts)
             except Exception as error:
                 logger.debug('Failed to connect to SFTP server...')
                 logger.error('Cause: {}'.format(error))
