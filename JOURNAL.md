@@ -48,4 +48,13 @@
 + Implemented [sftpconn.py](https://bitbucket.org/EverWinter23/skynet/src/dev/lib/sftpcon.py) 
   module to maintain SSH connection to the remote SFTP server.
 + Started working on **mapping** a local foler to a remote folder on SFTP server.
-+ Finished the [mapper.py](https://bitbucket.org/EverWinter23/skynet/src/dev/lib/mapper.py) module.
++ Finished the [mapper.py](https://bitbucket.org/EverWinter23/skynet/src/dev/lib/mapper.py) 
+  module.
+
+
+### Friday 1st June 2018
++ Implemented [watcher.py](https://bitbucket.org/EverWinter23/skynet/src/dev/lib/watcher.py) 
+  module - to watch over the local dir for any changes and take necessary action.
++ Implemented [handler.py](https://bitbucket.org/EverWinter23/skynet/src/dev/lib/handler.py) 
+  module - to actually handle the transfers, and mimic them on the SFTP server.
++ Added support for ignoring the monitoring and trasnfer of some files like - swap files etc.
