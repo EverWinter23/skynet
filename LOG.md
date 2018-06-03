@@ -98,6 +98,11 @@ complete-sync[True] The remote dir will be a true reflection of the local dir
 complete-sync[False] The remote dir will retain the files which have been deleted
 in the local dir.
 
+**Resource Moved**
+
+If a resource (file/dir) is moved inside the local dir which is being monitored, we simply mimic the move on the remote SFTP server.
+
+
 ## Syncing local dir with remote dir
 
 The following is a list of things that need to be done to done, to set-up complete
