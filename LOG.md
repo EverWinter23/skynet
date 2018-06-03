@@ -59,7 +59,7 @@ calls to event handlers to take appropriate action.
 **Handler** Handles the actual execution of the action taken by ovveriding
 methods.
 
-### NOTE: Handling the file system events
+## Handling the file system events
 
 **Directory Modification**
 
@@ -90,9 +90,32 @@ If a file is created, then we'll transfer that file.
 **Resource Deletion**
 
 If a resource (file/dir) is deleted in the local dir which is being monitored, we 
-will only delete that file if it is present on the remote dir only if this complete-sync mode is on.
+will only delete that file if it is present on the remote dir only if this complete-sync
+mode is on.
 
 complete-sync[True] The remote dir will be a true reflection of the local dir
 
 complete-sync[False] The remote dir will retain the files which have been deleted
 in the local dir.
+
+## Syncing local dir with remote dir
+
+The following is a list of things that need to be done to done, to set-up complete
+syncing.
+
++ watcher.py should keep monitoring the local dir for file system changes even when 
+  the connection to the SFTP server is lost.
++ watcher.py should record all actions that need to be taken corresponding to the
+  file system events in a Q or a file, so that they can be executed when conn b/w
+  the local system and remote SFTP server exists.
++ skynet.py (the main module) should notify some module (which acts b/w watcher.py 
+  and skynet.py as a src of comm.) that the conn has been re-estd. and it should
+  begin execution of each action stored in the Q/file.
++ skynet.py should be able to recover from conn loss and execute seamlessly. It should
+  also preserve the action during which the connection was lost so that it can be
+  re-executed.
++ skynet.py should keep on trying to connect to the SFTP server peridoically to
+  re-establish the conn.
+
+**NOTE:** The Q(if implemented) will need to be saved somewhere-> if the local PC was
+to shut down. The Q will also lead to Poducer-Consumer problem which will need to handled.
