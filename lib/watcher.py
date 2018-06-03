@@ -53,7 +53,7 @@ class Watcher(FileSystemEventHandler):
         logger.info("deleted: {}".format(event.src_path))
         
         if self.complete_sync:
-            logger.infor("deleting: {}".format(event.src_path))
+            logger.info("deleting: {}".format(event.src_path))
             self.handler.delete_resource(event.src_path)
     
     """
