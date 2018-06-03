@@ -17,10 +17,12 @@ class Handler:
           explicitly specified.
 
     parameters
-        TODO: Add desc ;-)
         sftp_con
-
+            An instance of SFTPCon class to transfer files and interact
+            with the remote SFTP server.
         mapper
+            An instance of Mapper class to map local files to their
+            respective paths on the SFTP server.
     """
 
     def __init__(self, sftp_con, mapper):
