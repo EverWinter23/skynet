@@ -21,14 +21,11 @@ class Watcher(PatternMatchingEventHandler):
         TODO: docstring
         complete_sync: boolean
     """
-    #def __init__(self, handler, complete_sync = False, **kwargs):
-    def __init__(self, handler, **kwargs):
-    
+    def __init__(self, handler, complete_sync = False, **kwargs):
         super(Watcher, self).__init__(**kwargs)
         
         self.handler = handler
-        self.complete_sync = False
-        #self.complete_sync = complete_sync
+        self.complete_sync = complete_sync
     
     """
     Called when a file or dir is created.
