@@ -79,7 +79,7 @@ class Mapper:
         relative_path = local_path[len(self.local_base):]
         remote_path = self.remote_base + relative_path
 
-        logger.info("mapped local_path->\'{}\' to remote_path->\'{}\'".format(
+        logger.info("Mapped local_path->\'{}\' to remote_path->\'{}\'".format(
             local_path, remote_path))
             
         return remote_path
