@@ -3,12 +3,12 @@
 '''
 from logger import logger
 from watchdog.observers import Observer
-from watchdog.events import FileSystemEventHandler
+from watchdog.events import PatternMatchingEventHandler
 from watchdog.events import DirCreatedEvent
 from watchdog.events import DirModifiedEvent
 
 # watcher on the wall
-class Watcher(FileSystemEventHandler):
+class Watcher(PatternMatchingEventHandler):
     """
     Watches a dir for any changes within that dir for any
     file system event (create, delete, rename, move etc...)
@@ -21,11 +21,14 @@ class Watcher(FileSystemEventHandler):
         TODO: docstring
         complete_sync: boolean
     """
-    def __init__(self, handler, complete_sync = False, **kwargs):
+    #def __init__(self, handler, complete_sync = False, **kwargs):
+    def __init__(self, handler, **kwargs):
+    
         super(Watcher, self).__init__(**kwargs)
         
         self.handler = handler
-        self.complete_sync = complete_sync
+        self.complete_sync = False
+        #self.complete_sync = complete_sync
     
     """
     Called when a file or dir is created.
@@ -36,10 +39,8 @@ class Watcher(FileSystemEventHandler):
         if it contains any file.          
     """
     def on_created(self, event):
-        logger.info("created: {}".format(event.src_path))
-
         if not isinstance(event, DirCreatedEvent):
-            logger.info("sending: {}".format(event.src_path))
+            logger.info("Recorded creation: {}".format(event.src_path))
             self.handler.send_resource(event.src_path)
 
     """
@@ -49,11 +50,9 @@ class Watcher(FileSystemEventHandler):
         which are not present in the local dir only if this option
         is turned on.
     """ 
-    def on_deleted(self, event):
-        logger.info("deleted: {}".format(event.src_path))
-        
+    def on_deleted(self, event):        
         if self.complete_sync:
-            logger.info("deleting: {}".format(event.src_path))
+            logger.info("Recorded deletion: {}".format(event.src_path))
             self.handler.delete_resource(event.src_path)
     
     """
@@ -77,17 +76,15 @@ class Watcher(FileSystemEventHandler):
                by the processing team. 
     """
     def on_modified(self, event):
-        logger.info("modified: {}".format(event.src_path))
-
         if not isinstance(event, DirModifiedEvent):
-            logger.info("sending: {}".format(event.src_path))
+            logger.info("Recorded modification: {}".format(event.src_path))
             self.handler.send_resource(event.src_path)
     
     """
     Called when a file or dir is renamed or moved.
     """
     def on_moved(self, event):
-        logger.info("moved: {}".format(event.src_path))
-        logger.info("moving: {}".format(event.src_path))
+        logger.info("Recorded move: \'{}\'->\'{}\'".format(
+            event.src_path, event.dest_path))
         self.handler.move_resource(event._src_path, event.dest_path)
         
