@@ -109,7 +109,7 @@ def main():
 
     mapper = Mapper(local_root, local_dir, remote_root, remote_dir)
     handler = Handler(conn, mapper)
-    watcher = Watcher(handler, ignore_patterns=ignore_patterns)
+    watcher = Watcher(handler, complete_sync=False,ignore_patterns=ignore_patterns)
 
     observer = Observer()
     # NOTE: Please be aware of local_root and local_base
