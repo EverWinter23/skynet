@@ -18,8 +18,11 @@ class Watcher(PatternMatchingEventHandler):
         handler: Handler
             to actually handle the transfers, and mimic them 
             on the SFTP server.
-        TODO: docstring
         complete_sync: boolean
+            when True, files deleted in the local folder will
+            also be deleted in the remote folder.
+            when False, files deleted in the local folder will
+            be retained in the remote folder.
     """
     def __init__(self, handler, complete_sync = False, **kwargs):
         super(Watcher, self).__init__(**kwargs)
@@ -42,10 +45,10 @@ class Watcher(PatternMatchingEventHandler):
 
     """
     Called when a file or dir is deleted.
-    NOTE: TODO=> As of now - in complete sync mode
+    NOTE:
         It will only delete the files present on the remote dir
-        which are not present in the local dir only if this option
-        is turned on.
+        which are not present in the local dir only if complete-sync
+        is set to True.
     """ 
     def on_deleted(self, event):        
         if self.complete_sync:
