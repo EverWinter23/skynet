@@ -1,7 +1,9 @@
 '''
 1st june 2018 friday
 '''
+
 from logger import logger
+from persistqueue import FIFOSQLiteQueue as Q
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 from watchdog.events import DirCreatedEvent
@@ -15,21 +17,23 @@ class Watcher(PatternMatchingEventHandler):
     and takes appropriate action.
 
     parameters
-        handler: Handler
-            to actually handle the transfers, and mimic them 
-            on the SFTP server.
         complete_sync: boolean
             when True, files deleted in the local folder will
             also be deleted in the remote folder.
             when False, files deleted in the local folder will
             be retained in the remote folder.
+
+    attributes
+        _q: Instance of FIFOSQLiteQueue class to store actions
+            onto the disk for recoverability and fault tolerance.
     """
-    def __init__(self, handler, complete_sync = False, **kwargs):
+    def __init__(self, complete_sync = False, **kwargs):
         super(Watcher, self).__init__(**kwargs)
         logger.info("Night gathers, and now my watch begins.")  
-          
-        self.handler = handler
+
         self.complete_sync = complete_sync
+        self._q = Q(path='skynet_db', auto_commit=True, multithreading=True)
+        
     
     """
     Called when a file or dir is created.
@@ -42,7 +46,7 @@ class Watcher(PatternMatchingEventHandler):
     def on_created(self, event):
         if not isinstance(event, DirCreatedEvent):
             logger.info("Recorded creation: {}".format(event.src_path))
-            self.handler.send_resource(event.src_path)
+            self._q.put({'action': 'send', 'src_path': event.src_path})
 
     """
     Called when a file or dir is deleted.
@@ -54,7 +58,7 @@ class Watcher(PatternMatchingEventHandler):
     def on_deleted(self, event):        
         if self.complete_sync:
             logger.info("Recorded deletion: {}".format(event.src_path))
-            self.handler.delete_resource(event.src_path)
+            self._q.put({'action': 'delete', 'src_path': event.src_path})
     
     """
     Called when a file or dir is modified.
@@ -79,7 +83,7 @@ class Watcher(PatternMatchingEventHandler):
     def on_modified(self, event):
         if not isinstance(event, DirModifiedEvent):
             logger.info("Recorded modification: {}".format(event.src_path))
-            self.handler.send_resource(event.src_path)
+            self._q.put({'action': 'send', 'src_path': event.src_path})
     
     """
     Called when a file or dir is renamed or moved.
@@ -87,5 +91,6 @@ class Watcher(PatternMatchingEventHandler):
     def on_moved(self, event):
         logger.info("Recorded move: \'{}\'->\'{}\'".format(
             event.src_path, event.dest_path))
-        self.handler.move_resource(event._src_path, event.dest_path)
+        self._q.put({'action': 'move', 'src_path': event.src_path,
+                     'dest_path': event.dest_path})
         
