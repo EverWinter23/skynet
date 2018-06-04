@@ -109,7 +109,7 @@ syncing.
 
 + watcher.py should keep monitoring the local dir for file system changes even when 
   the connection to the SFTP server is lost.
-+ watcher.py should record all actions that need to be taken corresponding to the
++ handler.py should record all actions that need to be taken corresponding to the
   file system events in a Q or a file, so that they can be executed when conn b/w
   the local system and remote SFTP server exists.
 + skynet.py (the main module) should notify some module (which acts b/w watcher.py 
