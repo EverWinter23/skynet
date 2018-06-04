@@ -58,3 +58,7 @@
 + Implemented [handler.py](https://bitbucket.org/EverWinter23/skynet/src/dev/lib/handler.py) 
   module - to actually handle the transfers, and mimic them on the SFTP server.
 + Added support for ignoring the monitoring and trasnfer of some files like - swap files etc.
+
+### Monday 4th June 2018
++ Started working on integrating persist-queue with handler.py module to make the module
+  thread-safe, recoverable and disk based.
