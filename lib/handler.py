@@ -1,7 +1,10 @@
 '''
 3rd june 2018 friday
 '''
+
 from logger import logger
+from persistqueue import FIFOSQLiteQueue as Q
+
 # TODO: Support for windows
 import os
 
@@ -28,6 +31,33 @@ class Handler:
     def __init__(self, sftp_con, mapper):
         self.sftp_con = sftp_con
         self.mapper = mapper
+        self._q = Q(path='skynet_db', auto_commit=True, multithreading=True)
+
+    """
+    Retrieve actions stored by watcher.py and execute them one by one.
+    """
+    def runner(self):
+        while True:
+            entry = self._q.get()
+            try:
+                if entry['action'] == 'send':
+                    self.send_resource(entry['src_path'])
+                elif entry['action'] == 'delete':
+                    self.delete_resource(entry['src_path'])
+                elif entry['action'] == 'move':
+                    self.move_resource(entry['src_path'], entry['dest_path'])
+            except Exception as error:
+                """
+                NOTE:
+                    Because an exception occured, while executing the action
+                    we'll add it to the queue so that it may be re-executed 
+                    again. This ensures that change is reflected in the remote
+                    dir and not lost due to an error in connectivity.
+                """
+                self._q.put(entry)
+                logger.info('ERROR: {}'.format(error))
+                logger.info('Exiting...')
+                exit()
 
     """
     Transfers a resource(file) to the remote SFTP server.
@@ -65,8 +95,8 @@ class Handler:
         #       Use with CAUTION!
         # TODO: Will not use rm -rf for testing purposes
         # cmd = 'rm -rf "' + remote_path + '"'
-        cmd = 'rm "' + remote_path + '"' 
-        # self.sftp_con.ssh_conn.execute(cmd)
+        cmd = 'rm -rf "' + remote_path + '"' 
+        self.sftp_con.ssh_conn.execute(cmd)
         logger.info("Executed: {}".format(cmd))
 
 
@@ -95,6 +125,7 @@ def main():
     from mapper import Mapper
     from sftpcon import SFTPCon
     from watchdog.observers import Observer
+    from threading import Thread
 
     # test settings    
     hostname = 'localhost'
@@ -108,14 +139,15 @@ def main():
     ignore_patterns = ['*.swp', '*.tmp']
 
     conn = SFTPCon(host=hostname, username=username, password=password)
-
     mapper = Mapper(local_root, local_dir, remote_root, remote_dir)
     handler = Handler(conn, mapper)
-    watcher = Watcher(handler, complete_sync=False,ignore_patterns=ignore_patterns)
+    _thread_handler = Thread(target = handler.runner)
+    _thread_handler.start()
+    watcher = Watcher(complete_sync=True,ignore_patterns=ignore_patterns)
+    _thread_observer = Observer()
 
-    observer = Observer()
     # NOTE: Please be aware of local_root and local_base
-    observer.schedule(watcher, path=mapper.local_base, recursive=True)
+    _thread_observer.schedule(watcher, path=mapper.local_base, recursive=True)
 
     # TODO: Please be aware of inotify exception
     """
@@ -128,7 +160,7 @@ def main():
         $ sudo sysctl -p
     """
     try:
-        observer.start()
+        _thread_observer.start()
     except Exception as error:
         logger.info('exiting...')
         logger.info('Cause: {}'.format(error))
@@ -138,8 +170,9 @@ def main():
         while True:
             time.sleep(1)
     except KeyboardInterrupt:
-        observer.stop()
-    observer.join()
+        _thread_observer.stop()
+    _thread_observer.join()
+    _thread_handler.join
     
 if __name__ == '__main__':
     main()
