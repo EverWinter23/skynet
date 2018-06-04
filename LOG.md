@@ -84,7 +84,6 @@ Sending the whole file is a viable option, because:
 If a dir is created in the dir being monitored, there is no need to take any 
 action for it. It will automatically be created on the remote SFTP server if it 
 contains any file during the file transer. 
-
 If a file is created, then we'll transfer that file.
 
 **Resource Deletion**
@@ -93,9 +92,9 @@ If a resource (file/dir) is deleted in the local dir which is being monitored, w
 will only delete that file if it is present on the remote dir only if this complete-sync
 mode is on.
 
-complete-sync[True] The remote dir will be a true reflection of the local dir.
+complete-sync=True The remote dir will be a true reflection of the local dir.
 
-complete-sync[False] The remote dir will retain the files which have been deleted
+complete-sync=False The remote dir will retain the files which have been deleted
 in the local dir.
 
 **Resource Moved**
