@@ -124,3 +124,13 @@ syncing.
 
 **NOTE:** The Q(if implemented) will need to be saved somewhere-> if the local PC was
 to shut down. The Q will also lead to Poducer-Consumer problem which will need to handled.
+
+## Fault tolerant and recoverable syncing
+Will use [persist-queue](https://pypi.org/project/persist-queue/) module as it implements
+a file-based queue, and also achieves the main 3 features we desire:
+
+**Disk-based:** Each queued item should be stored in disk in case of any crash.
+
+**Thread-safe:** Can be used by multi-threaded producers and multi-threaded consumers.
+
+**Recoverable:** Items can be read after process restart.
