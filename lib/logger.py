@@ -5,7 +5,7 @@
 import logging
 
 # setup logging
-logFormat='%(levelname)s: %(message)s'
+logFormat= '[%(filename)s %(levelname)s]: %(message)s'
 logging.basicConfig(filename='skynet.log',level=logging.INFO, 
                     filemode='w', format=logFormat)
 
