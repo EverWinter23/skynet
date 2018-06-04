@@ -77,14 +77,14 @@ class Handler:
         src_path
             local path of the resource before it was moved
         
-        des_path
+        dest_path
             local path of the resource after it was moved
     """
     def move_resource(self, src_path, dest_path):
         remote_src_path = self.mapper.map_to_remote_path(src_path)
-        remote_des_path = self.mapper.map_to_remote_path(dest_path)
+        remote_dest_path = self.mapper.map_to_remote_path(dest_path)
 
-        cmd = 'mv "' + remote_src_path + '" ' +  remote_des_path + '"'
+        cmd = 'mv "' + remote_src_path + '" ' +  remote_dest_path + '"'
         self.sftp_con.ssh_conn.execute(cmd)
         logger.info("Executed: {}".format(cmd))
 
