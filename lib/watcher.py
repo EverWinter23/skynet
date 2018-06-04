@@ -26,7 +26,9 @@ class Watcher(PatternMatchingEventHandler):
     """
     def __init__(self, handler, complete_sync = False, **kwargs):
         super(Watcher, self).__init__(**kwargs)
-        
+        logger.info("Night gathers, and now my watch begins. It shall\
+                     not end until my death")  
+          
         self.handler = handler
         self.complete_sync = complete_sync
     
