@@ -75,7 +75,7 @@ class SFTPCon:
                 self.ssh_conn = pysftp.Connection(host, username=username, port=port,
                                                   password = password, cnopts=cnopts)
             except Exception as error:
-                logging.debug('failed to connect to SFTP server...')
+                logging.info('failed to connect to SFTP server...')
                 logging.error('cause: {}'.format(error))
                 logging.info('please check the config file...')
                 logging.info('please ensure that SFTP server is running...')
