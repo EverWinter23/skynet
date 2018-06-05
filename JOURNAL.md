@@ -67,3 +67,6 @@
 + Syncing process is fault tolerant and recoverable now due to the above changes.
 
 ## Tuesday 5th June 2018
++ Started working on the main module -- 
+  [skynet.py](https://bitbucket.org/EverWinter23/skynet/src/dev/lib/skynet.py) and its process
+  flow.
