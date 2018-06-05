@@ -5,8 +5,15 @@
 import logging
 
 # setup logging
-logFormat= '[%(filename)s %(levelname)s]: %(message)s'
-logging.basicConfig(filename='skynet.log',level=logging.INFO, 
-                    filemode='w', format=logFormat)
+"""
+    parameters:
+        level
+            sets the logging level of the logger, logging messages
+            which are less severe than level will be ignored.
+"""
+def get_logger(level = logging.INFO):
+    logFormat= '[%(filename)s %(levelname)s]: %(message)s'
+    logging.basicConfig(filename='skynet.log',level=level, 
+                        filemode='w', format=logFormat)
 
-Logger = logging.getLogger('skynet')
+    return logging.getLogger('skynet')
