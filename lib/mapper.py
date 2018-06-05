@@ -2,7 +2,7 @@
 31st may 2018 thursday
 '''
 
-# for remote SFTP server, whose path should be UNIX-style
+# for remote SFTP server, path should be UNIX-style
 import posixpath
 # for native os
 import os
