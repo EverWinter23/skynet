@@ -62,3 +62,8 @@
 ### Monday 4th June 2018
 + Started working on integrating persist-queue with handler.py module to make the module
   thread-safe, recoverable and disk based.
++ Integrated the persist-queue with the handler.py and the watcher.py module.
++ watcher.py and handler.py modules run independently of each other.
++ Syncing process is fault tolerant and recoverable now due to the above changes.
+
+## Tuesday 5th June 2018
