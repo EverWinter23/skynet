@@ -40,6 +40,39 @@ Changes will only be needed to apply to the sftpcon.py module.
         # upload a local file to the SFTP server
         sftp.put('local_file_path')
 
+## The concept of Mapping
+
+**Example:** Say, we want to sync the folder x to the folder y on the remote SFTP server.
+
+Let alphabets represent a directory, then we can represent the paths as:
+
+    Here,
+      local_root = o->l
+      remote_root = o->o->r
+      local_dir = x
+      remote_dir = y
+
+    Remote dir structure: [o->l->y]->...
+                          [-------]
+                           ^^^^^^^ this part, --forms your remote_base
+
+    Local dir structure: [o->o->r->x]->z->a
+                         [----------]
+                          ^^^^^^^^^ this part, --forms your local_base
+
+    For tranfering a file in the dir x, we first strip its absolute path
+    of its local_base to obtain it's relative path.
+    For the sake of this example, let's say we want to transfer the dir a.
+    Then the relative path of 'a' to the local base will be: z->a
+
+    After this, we map this relative path to the remote dir by appending
+    this relative path to the remote_base.
+
+    After the transfer is complete,
+    Remote dir structure: [o->l->y]->z->a
+                          [-------]
+                           ^^^^^^^ this part, --forms your remote_base
+    
 
 **With SSH keys**
 
