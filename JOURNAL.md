@@ -72,3 +72,4 @@
   [skynet.py](https://bitbucket.org/EverWinter23/skynet/src/dev/lib/skynet.py) and its process
   flow.
 + Working on cli for generating config files using command line.
++ Attended a presentation on Color space and Digital photography.
