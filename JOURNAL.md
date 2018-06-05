@@ -65,8 +65,10 @@
 + Integrated the persist-queue with the handler.py and the watcher.py module.
 + watcher.py and handler.py modules run independently of each other.
 + Syncing process is fault tolerant and recoverable now due to the above changes.
++ Attended a presentation on Drones and Data Acquistion
 
 ## Tuesday 5th June 2018
 + Started working on the main module -- 
   [skynet.py](https://bitbucket.org/EverWinter23/skynet/src/dev/lib/skynet.py) and its process
   flow.
++ Working on cli for generating config files using command line.
