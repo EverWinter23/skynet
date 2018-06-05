@@ -133,3 +133,20 @@ a file-based queue, and also achieves the main 3 features we desire:
 **Thread-safe:** Can be used by multi-threaded producers and multi-threaded consumers.
 
 **Recoverable:** Items can be read after process restart.
+
+We integrate it with the watcher.py module by enQing the action needed to handle the 
+corresponding file system event. 
+
+    # SEND action, with args src_path
+    self._q.put({'action': 'send', 'src_path': event.src_path})
+    # DELETE action, with args src_path
+    self._q.put({'action': 'delete', 'src_path': event.src_path})
+    # MOVE action with args src_path and dest_path
+    self._q.put({'action': 'move', 'src_path': event.src_path,
+                 'dest_path': event.dest_path})
+
+Whilst, the handler.py module waits for any item to be enQ'd and processes the actions, by
+deQing the actions only if they are successful. If the the required processing corresponding 
+to an action runs into any error, the action is enQ'd again.
+
+NOTE: handler.py and watcher.py run independent of each other. 
