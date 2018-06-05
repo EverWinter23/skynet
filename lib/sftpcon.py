@@ -3,7 +3,7 @@
 '''
 
 import pysftp, os
-from logger import logger
+import logging
 
 class SFTPCon:
     """
@@ -45,19 +45,19 @@ class SFTPCon:
         if private_key_file is None:
             cnopts.hostkeys = None
 
-        logger.info('initializing connection with the following information...')
-        logger.info('hostname: {}'.format(host))
-        logger.info('username: {}'.format(username))
-        logger.info('password: {}'.format(password))
-        logger.info('port: {}'.format(port))
-        logger.info('private_key_file: {}'.format(private_key_file))
-        logger.info('private_key_password: {}'.format(private_key_password))
-        logger.info('compression: {}'.format(compression))
+        logging.info('initializing connection with the following information...')
+        logging.info('hostname: {}'.format(host))
+        logging.info('username: {}'.format(username))
+        logging.info('password: {}'.format(password))
+        logging.info('port: {}'.format(port))
+        logging.info('private_key_file: {}'.format(private_key_file))
+        logging.info('private_key_password: {}'.format(private_key_password))
+        logging.info('compression: {}'.format(compression))
 
         self.ssh_prefix = username + '@' + password
         
         if password == '':
-            logger.debug('no password provided, using key auth...')
+            logging.debug('no password provided, using key auth...')
             try:
                 self.ssh_conn = pysftp.Connection(host, username=username, port=port, 
                                                   private_key_file = private_key_file,
@@ -65,9 +65,9 @@ class SFTPCon:
                                                   cnopts=cnopts)
 
             except Exception as error:
-                logger.debug('key auth failed...')
-                logger.error('cause: {}'.format(error))
-                logger.info('please check the config file...')
+                logging.debug('key auth failed...')
+                logging.error('cause: {}'.format(error))
+                logging.info('please check the config file...')
                 exit()
 
         if self.ssh_conn is None:
@@ -75,10 +75,10 @@ class SFTPCon:
                 self.ssh_conn = pysftp.Connection(host, username=username, port=port,
                                                   password = password, cnopts=cnopts)
             except Exception as error:
-                logger.debug('failed to connect to SFTP server...')
-                logger.error('cause: {}'.format(error))
-                logger.info('please check the config file...')
-                logger.info('please ensure that SFTP server is running...')
+                logging.debug('failed to connect to SFTP server...')
+                logging.error('cause: {}'.format(error))
+                logging.info('please check the config file...')
+                logging.info('please ensure that SFTP server is running...')
                 exit()
 
 

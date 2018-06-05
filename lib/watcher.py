@@ -2,7 +2,7 @@
 1st june 2018 friday
 '''
 
-from logger import logger
+import logging
 from persistqueue import FIFOSQLiteQueue as Q
 from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
@@ -29,7 +29,7 @@ class Watcher(PatternMatchingEventHandler):
     """
     def __init__(self, complete_sync = False, **kwargs):
         super(Watcher, self).__init__(**kwargs)
-        logger.info("Night gathers, and now my watch begins.")  
+        logging.info("Night gathers, and now my watch begins.")  
 
         self.complete_sync = complete_sync
         self._q = Q(path='skynet_db', auto_commit=True, multithreading=True)
@@ -45,7 +45,7 @@ class Watcher(PatternMatchingEventHandler):
     """
     def on_created(self, event):
         if not isinstance(event, DirCreatedEvent):
-            logger.info("Recorded creation: {}".format(event.src_path))
+            logging.info("Recorded creation: {}".format(event.src_path))
             self._q.put({'action': 'send', 'src_path': event.src_path})
 
     """
@@ -57,7 +57,7 @@ class Watcher(PatternMatchingEventHandler):
     """ 
     def on_deleted(self, event):        
         if self.complete_sync:
-            logger.info("Recorded deletion: {}".format(event.src_path))
+            logging.info("Recorded deletion: {}".format(event.src_path))
             self._q.put({'action': 'delete', 'src_path': event.src_path})
     
     """
@@ -82,14 +82,14 @@ class Watcher(PatternMatchingEventHandler):
     """
     def on_modified(self, event):
         if not isinstance(event, DirModifiedEvent):
-            logger.info("Recorded modification: {}".format(event.src_path))
+            logging.info("Recorded modification: {}".format(event.src_path))
             self._q.put({'action': 'send', 'src_path': event.src_path})
     
     """
     Called when a file or dir is renamed or moved.
     """
     def on_moved(self, event):
-        logger.info("Recorded move: \'{}\'->\'{}\'".format(
+        logging.info("Recorded move: \'{}\'->\'{}\'".format(
             event.src_path, event.dest_path))
         self._q.put({'action': 'move', 'src_path': event.src_path,
                      'dest_path': event.dest_path})

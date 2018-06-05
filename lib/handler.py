@@ -2,7 +2,7 @@
 3rd june 2018 friday
 '''
 
-from logger import logger
+import logging
 from persistqueue import FIFOSQLiteQueue as Q
 
 # TODO: Support for windows
@@ -55,8 +55,8 @@ class Handler:
                     dir and not lost due to an error in connectivity.
                 """
                 self._q.put(entry)
-                logger.info('ERROR: {}'.format(error))
-                logger.info('Exiting...')
+                logging.info('ERROR: {}'.format(error))
+                logging.info('Exiting...')
                 exit()
 
     """
@@ -78,7 +78,7 @@ class Handler:
         
         self.sftp_con.ssh_conn.execute(cmd)
         self.sftp_con.ssh_conn.put(src_path, remote_path)
-        logger.info("Executed: {}".format(cmd))
+        logging.info("Executed: {}".format(cmd))
 
 
     """
@@ -97,7 +97,7 @@ class Handler:
         # cmd = 'rm -rf "' + remote_path + '"'
         cmd = 'rm -rf "' + remote_path + '"' 
         self.sftp_con.ssh_conn.execute(cmd)
-        logger.info("Executed: {}".format(cmd))
+        logging.info("Executed: {}".format(cmd))
 
 
     """
@@ -116,7 +116,7 @@ class Handler:
 
         cmd = 'mv "' + remote_src_path + '" ' +  remote_dest_path + '"'
         self.sftp_con.ssh_conn.execute(cmd)
-        logger.info("Executed: {}".format(cmd))
+        logging.info("Executed: {}".format(cmd))
 
 # test module
 def main():
@@ -162,8 +162,8 @@ def main():
     try:
         _thread_observer.start()
     except Exception as error:
-        logger.info('exiting...')
-        logger.info('Cause: {}'.format(error))
+        logging.info('exiting...')
+        logging.info('Cause: {}'.format(error))
         exit()
 
     try:

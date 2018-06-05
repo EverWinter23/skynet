@@ -6,8 +6,7 @@
 import posixpath
 # for native os
 import os
-
-from logger import logger
+import logging
 
 class Mapper:
     """
@@ -45,14 +44,14 @@ class Mapper:
         self.local_base = os.path.join(local_root, local_dir)
         
         if not os.path.isdir(self.local_base):
-            logger.error("{} is not a vaild path.".format(self.local_base))
+            looging.error("{} is not a vaild path.".format(self.local_base))
             exit()
 
         self.remote_base = posixpath.join(remote_root, remote_dir)
         
-        logger.info("local_base: {}".format(self.local_base))
-        logger.info("remote_base: {}".format(self.remote_base))
-        logger.info("Changes in-> \'{}\' will be reflected here-> \'{}\'".format(
+        looging.info("local_base: {}".format(self.local_base))
+        looging.info("remote_base: {}".format(self.remote_base))
+        looging.info("Changes in-> \'{}\' will be reflected here-> \'{}\'".format(
             self.local_base, self.remote_base))
 
     """
@@ -79,7 +78,7 @@ class Mapper:
         relative_path = local_path[len(self.local_base):]
         remote_path = self.remote_base + relative_path
 
-        logger.info("Mapped local_path->\'{}\' to remote_path->\'{}\'".format(
+        looging.info("Mapped local_path->\'{}\' to remote_path->\'{}\'".format(
             local_path, remote_path))
             
         return remote_path
