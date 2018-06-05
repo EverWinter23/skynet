@@ -55,7 +55,7 @@ class Handler:
                     dir and not lost due to an error in connectivity.
                 """
                 self._q.put(entry)
-                logging.info('ERROR: {}'.format(error))
+                logging.error('ERROR: {}'.format(error))
                 logging.info('Exiting...')
                 exit()
 
