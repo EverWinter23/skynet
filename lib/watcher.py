@@ -25,7 +25,8 @@ class Watcher(PatternMatchingEventHandler):
 
     attributes
         _q: Instance of FIFOSQLiteQueue class to store actions
-            onto the disk for recoverability and fault tolerance.
+            onto the disk using SQLiteDB for recoverability and
+            fault tolerance.
     """
     def __init__(self, complete_sync = False, **kwargs):
         super(Watcher, self).__init__(**kwargs)
