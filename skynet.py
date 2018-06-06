@@ -4,17 +4,103 @@ tuesday 5th june 2108
 
 import arg_actions
 import lib.logger as log
+from time import sleep
+from watchdog.observers import Observer
 from lib.mapper import Mapper
 from lib.parser import Parser
+from threading import Thread
 from lib.sftpcon import SFTPCon
 from lib.watcher import Watcher
 from lib.handler import Handler
+from datetime import datetime.now
 
 class SkyNet:
     """
+    parameters
+        config_file
+            path to the config file
+
+        logging_lvl
+            sets the logging level of the logger, logging messages
+            which are less severe than level will be ignored.
     """
-    def __init__():
-        pass
+    def __init__(self, config_file, logging_lvl):
+        # setup logging
+        logger = log.get_logger(log.lvl_mapping[logging_lvl])
+
+        # get the configuration from the config file
+        config.read(config_file)
+
+        # string literals for convenience
+        SERVER = 'SERVER'
+        SYNC = 'SYNC'
+
+        # static configuration --the mappings will not change
+        mapper = Mapper(local_root=config[SYNC]['local_dir'],
+                        local_dir=config[SYNC]['local_dir'],
+                        remote_root=config[SYNC]['remote_root'],
+                        remote_dir=config[SYNC]['remote_dir'])
+        
+        # watcher will notify us of any file system events
+        watcher = Watcher(complete_sync=config[SYNC]['complete_sync'],
+                          ignore_patterns=config[SYNC]['ignore_patterns'])
+
+        # observer to monitor the directory --and notify watcher
+        _thread_observer_ = Observer() 
+        
+        # NOTE: 
+        #   Please be aware of local_root and local_base, they're DIFFERENT
+        #   If you get the inotify exception, please read the LOG.md
+        _thread_observer_.schedule(watcher, path=mapper.local_base, 
+                                  recursive=True)
+
+        # dynamic configuration --guard against conn drop,restablishing conn
+        sftpcon = self._get_connection()
+        # start the daemon
+        self._start_execution()
+                  
+    """
+    TODO: Add desc
+    """
+    def _start_execution():
+        # while conn exists
+        # TODO: Add control flow desc
+        while sftpcon not None:            
+            if handler is None:
+                # init handler --to execute actions recorded by the watcher
+                handler = Handler(sftp_con=sftpcon, mapper=mapper)
+                _thread_handler_ = Thread(target=handler.runner)
+                
+                try:
+                    _thread_handler_.start()
+                except Exception as error:
+                    logger.error('Cause: {}'.format(error))
+                    sftpcon = self._get_connection()
+                    # need to get a new handler
+                    handler = None
+
+    """
+    TODO: Add desc
+    """
+    def _get_connection(self):
+        sftpcon = None
+        while True:
+            try:
+                # try to connect
+                sftpcon = SFTPCon(host=config[SERVER]['remote_host'], 
+                                username=config[SERVER]['remote_username'],
+                                password=config[SERVER]['remote_password'])
+                # must've obtained the connection
+                break
+            except Exception as error:
+                logger.error('Cause: {}'.format(error))
+                logger.info('Sleeping... at {}'.format(now()))
+                sleep(300)  # check every five minutes
+                logger.info('Woke up... at {}'.format(now()))
+                continue
+        return sftpcon
+        
+                
 
 # generate config file using command-line interface
 def main():
