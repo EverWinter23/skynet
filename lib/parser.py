@@ -18,4 +18,4 @@ class Parser(ArgumentParser):
 
         # for changing or generating config
         self.add_argument("--config", action='store_true',
-            help="SSH remote port (defaults to 22)")
+            help="configure settings")
