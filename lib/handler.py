@@ -31,7 +31,11 @@ class Handler:
     def __init__(self, sftp_con, mapper):
         self.sftp_con = sftp_con
         self.mapper = mapper
-        self._q = Q(path='skynet_db', auto_commit=True, multithreading=True)
+        # NOTE: 
+        #   auto_commit = False in this declaration, this ensures that
+        #   when we deQ something from the Q, the change is not committed
+        #   until and unless the action is completed.
+        self._q = Q(path='skynet_db', auto_commit=False, multithreading=True)
 
     """
     Retrieve actions stored by watcher.py and execute them one by one.
@@ -46,15 +50,24 @@ class Handler:
                     self.delete_resource(entry['src_path'])
                 elif entry['action'] == 'move':
                     self.move_resource(entry['src_path'], entry['dest_path'])
+                
+                # commit changes, i.e. commit deQ
+                self._q.task_done()
             except Exception as error:
                 """
-                NOTE:
+                NOTE:  Need for auto_commit to be False
+                    This was what I was doing previously->which can lead to
+                    an unforseen error.
+                        Since,  I was enQing the action --at the end of the Q,
+                        what if a 'send' action failed, and there was a 'move'/
+                        'delete' action on the same file. 
+
                     Because an exception occured, while executing the action
                     we'll add it to the queue so that it may be re-executed 
                     again. This ensures that change is reflected in the remote
                     dir and not lost due to an error in connectivity.
                 """
-                self._q.put(entry)
+                # self._q.put(entry)
                 logging.error('ERROR: {}'.format(error))
                 logging.info('Exiting...')
                 exit()
@@ -118,61 +131,8 @@ class Handler:
         self.sftp_con.ssh_conn.execute(cmd)
         logging.info("Executed: {}".format(cmd))
 
-# test module
 def main():
-    import time
-    from watcher import Watcher
-    from mapper import Mapper
-    from sftpcon import SFTPCon
-    from watchdog.observers import Observer
-    from threading import Thread
-
-    # test settings    
-    hostname = 'localhost'
-    username = 'frost'
-    password = 'finch75'
-
-    local_root = '/home/frost/Code'
-    local_dir = 'test'
-    remote_dir = 'Stuff'
-    remote_root = '/home/frost'
-    ignore_patterns = ['*.swp', '*.tmp']
-
-    conn = SFTPCon(host=hostname, username=username, password=password)
-    mapper = Mapper(local_root, local_dir, remote_root, remote_dir)
-    handler = Handler(conn, mapper)
-    _thread_handler = Thread(target = handler.runner)
-    _thread_handler.start()
-    watcher = Watcher(complete_sync=True,ignore_patterns=ignore_patterns)
-    _thread_observer = Observer()
-
-    # NOTE: Please be aware of local_root and local_base
-    _thread_observer.schedule(watcher, path=mapper.local_base, recursive=True)
-
-    # TODO: Please be aware of inotify exception
-    """
-    You can set a new limit temporary with:
-        $ sudo sysctl fs.inotify.max_user_watches=524288
-        $ sudo sysctl -p
-
-    If you like to make your limit permanent, use:
-        $ echo fs.inotify.max_user_watches=524288 | sudo tee -a /etc/sysctl.conf
-        $ sudo sysctl -p
-    """
-    try:
-        _thread_observer.start()
-    except Exception as error:
-        logging.info('exiting...')
-        logging.info('Cause: {}'.format(error))
-        exit()
-
-    try:
-        while True:
-            time.sleep(1)
-    except KeyboardInterrupt:
-        _thread_observer.stop()
-    _thread_observer.join()
-    _thread_handler.join
+    pass
     
 if __name__ == '__main__':
     main()
