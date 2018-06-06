@@ -73,3 +73,9 @@
   flow.
 + Working on cli for generating config files using command line.
 + Attended a presentation on Color space and Digital photography.
+
+## Wednesday 6th June 2018
++ Added support for the  for configuration of the SFTP connection using config.ini file.
++ Implemented a cli to generate the config file.
++ Started working on re-establishing connection b/w the local m/c and the SFTP server.
++ Learnt about Image Segmentation of GCP points.
