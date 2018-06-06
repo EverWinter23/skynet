@@ -42,6 +42,7 @@ def _config():
         os.makedirs(DIR_PATH)
 
     print(warning)
+    # SERVER settings
     print(server_config)
     print(host_msg)
     remote_host = input('remote_host = ')       
@@ -55,7 +56,11 @@ def _config():
     print(passwd_msg)
     remote_password = input('remote_password = ')
 
+    # SYNC settings
     print(sync_msg)
+    print(complete_sync_msg)
+    complete_sync = input('complete_sync = ')
+
     print(local_root_msg)    
     local_root = input('local_root = ')
 
