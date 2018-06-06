@@ -30,6 +30,13 @@ sync_msg = """
 # Please see LOG.md for further details on configuration settings.
 """
 
+complete_sync_msg = """
+# Enter boolean value, i.e. True or False [CASE SENSITIVE-- enter as is]
+# When True, files deleted in the local folder will also be deleted in the
+# remote folder.
+# When False, files deleted in the local folder willbe retained in the 
+# remote folder."""
+
 local_root_msg = """
 # Path of the top level dir location on the local machine.
 # Should be an absolute path, relative paths may lead to errors.
