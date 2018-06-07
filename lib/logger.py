@@ -20,9 +20,11 @@ lvl_mapping = {
             sets the logging level of the logger, logging messages
             which are less severe than level will be ignored.
 """
-def get_logger(level = logging.INFO):
-    logFormat= '[%(filename)s %(levelname)s]: %(message)s'
-    logging.basicConfig(filename='skynet.log',level=level, 
+
+
+def get_logger(level=logging.INFO):
+    logFormat = '[%(filename)s %(levelname)s]: %(message)s'
+    logging.basicConfig(filename='skynet.log', level=level,
                         filemode='w', format=logFormat)
 
     return logging.getLogger('skynet')
