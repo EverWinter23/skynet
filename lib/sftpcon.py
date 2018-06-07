@@ -2,7 +2,7 @@
 31st may 2018 thursday
 '''
 
-from pysftp import Connection
+from pysftp import Connection, CnOpts
 import os
 import logging
 
@@ -42,7 +42,7 @@ class SFTPCon:
         self.ssh_conn = None
 
         # connection options
-        cnopts = pysftp.CnOpts()
+        cnopts = CnOpts()
         cnopts.compression = compression
         # set hostkeys to None, if not provided
         if private_key_file is None:
