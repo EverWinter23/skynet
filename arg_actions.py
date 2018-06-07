@@ -24,6 +24,19 @@ FILE_PATH = os.path.join(DIR_PATH, CONFIG_FILE)
 # TODO: Remove port -> no port forwarding? ANDROID???
 
 """
+Return the path of the config file
+"""
+def _get_config():
+    return FILE_PATH
+
+"""
+Check whether the config file exists or not
+"""
+def _check_config():
+    return Path(FILE_PATH).exists()
+
+"""
+TODO: Add paths
 Looks for a 'config.ini' file in ->
     Linux/Mac:
     Windows:
@@ -32,8 +45,7 @@ before it overwrites the file with new configuration.
 """
 def _config():
     # TODO: Absolute path for windows?
-    file = Path(FILE_PATH)
-    if file.exists():
+    if _check_config():
         print('A configuration file already exists.')
         print('Do you want to overwrite the existing configuration?')
         #ans = input('[yes/no]> ')
@@ -70,7 +82,7 @@ def _config():
     remote_root = input('remote root = ')
     
     print(ignore_msg)
-    ignore_patterns = list(input('ignore_patterns = ').split(' '))
+    ignore_patterns = (input('ignore_patterns = '))
 
     print(path_msg)
     local_dir = input('local dir = ')
@@ -81,8 +93,13 @@ def _config():
     
     # start making the config.ini file from the input
     config = ConfigParser(allow_no_value=True)
-    
-    config['SERVER'] = {server_config: None,    # writes comments to config file
+
+    # NOTE:
+    #   Every key-value pair that is of the form:
+    #       Key: None
+    #   are their to write the comments to the configuration file.
+    #   Just makes the conifg while easier to edit.    
+    config['SERVER'] = {server_config: None,    
                         host_msg: None,
                         'remote_host': remote_host,
                         uid_msg: None,
@@ -102,10 +119,7 @@ def _config():
                       path_msg: None,
                       'local_dir': local_dir,
                       'remote_dir': remote_dir}
-    """
-    config.add_section('SERVER')
-    config.set('SERVER', '# rabid')    
-    """
+    
     with open(FILE_PATH, 'w') as config_file:
         config.write(config_file)
     print('All done...')
