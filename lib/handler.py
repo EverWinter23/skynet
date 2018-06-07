@@ -13,6 +13,8 @@ import os
 #       so that it can handle them the way it wants without anything
 #       holding it back.
 # Handling conn. exceptions becomes very important here.
+
+
 class Handler:
     """
     Handles the transfers, and mimics them on the SFTP server.
@@ -20,10 +22,10 @@ class Handler:
           explicitly specified.
 
     parameters
-        sftp_con
+        sftp_con: SFTPCon
             An instance of SFTPCon class to transfer files and interact
             with the remote SFTP server.
-        mapper
+        mapper: Mapper
             An instance of Mapper class to map local files to their
             respective paths on the SFTP server.
     """
@@ -31,16 +33,16 @@ class Handler:
     def __init__(self, sftp_con, mapper):
         self.sftp_con = sftp_con
         self.mapper = mapper
-        # NOTE: 
+        # NOTE:
         #   auto_commit = False in this declaration, this ensures that
         #   when we deQ something from the Q, the change is not committed
         #   until and unless the action is completed.
         self._q = Q(path='skynet_db', auto_commit=False, multithreading=True)
 
-    """
-    Retrieve actions stored by watcher.py and execute them one by one.
-    """
     def runner(self):
+        """
+        Retrieve actions stored by watcher.py and execute them one by one.
+        """
         while True:
             entry = self._q.get()
             try:
@@ -50,7 +52,7 @@ class Handler:
                     self.delete_resource(entry['src_path'])
                 elif entry['action'] == 'move':
                     self.move_resource(entry['src_path'], entry['dest_path'])
-                
+
                 # commit changes, i.e. commit deQ
                 self._q.task_done()
             except Exception as error:
@@ -60,10 +62,10 @@ class Handler:
                     an unforseen error.
                         Since,  I was enQing the action --at the end of the Q,
                         what if a 'send' action failed, and there was a 'move'/
-                        'delete' action on the same file. 
+                        'delete' action on the same file.
 
                     Because an exception occured, while executing the action
-                    we'll add it to the queue so that it may be re-executed 
+                    we'll add it to the queue so that it may be re-executed
                     again. This ensures that change is reflected in the remote
                     dir and not lost due to an error in connectivity.
                 """
@@ -72,14 +74,14 @@ class Handler:
                 logging.info('Exiting...')
                 exit()
 
-    """
-    Transfers a resource(file) to the remote SFTP server.
-
-    parameters
-        src_path
-            local path of the resource to be sent
-    """
     def send_resource(self, src_path):
+        """
+        Transfers a resource(file) to the remote SFTP server.
+
+        parameters
+            src_path
+                local path of the resource to be sent
+        """
         remote_path = self.mapper.map_to_remote_path(src_path)
         # NOTE: For transferring any file, make sure all parent dir
         #       exist, if not make them.
@@ -88,51 +90,51 @@ class Handler:
         cmd = 'mkdir -p "' + parent_path + '"'
         # TODO: Instead of executing, right away store the command
         #       Add thread to execute the commands
-        
+
         self.sftp_con.ssh_conn.execute(cmd)
         self.sftp_con.ssh_conn.put(src_path, remote_path)
         logging.info("Executed: {}".format(cmd))
 
-
-    """
-    Deletes a resource on the remote SFTP server.
-    
-    parameters
-        src_path
-            local path of the resource to be deleted
-    """
     def delete_resource(self, src_path):
+        """
+        Deletes a resource on the remote SFTP server.
+
+        parameters
+            src_path
+                local path of the resource to be deleted
+        """
         remote_path = self.mapper.map_to_remote_path(src_path)
 
         # NOTE: Very dangerous cmd, can delete everything inside a dir
         #       Use with CAUTION!
         # TODO: Will not use rm -rf for testing purposes
         # cmd = 'rm -rf "' + remote_path + '"'
-        cmd = 'rm -rf "' + remote_path + '"' 
+        cmd = 'rm -rf "' + remote_path + '"'
         self.sftp_con.ssh_conn.execute(cmd)
         logging.info("Executed: {}".format(cmd))
 
-
-    """
-    Moves a resource on the remote SFTP server.
-
-    parameters
-        src_path
-            local path of the resource before it was moved
-        
-        dest_path
-            local path of the resource after it was moved
-    """
     def move_resource(self, src_path, dest_path):
+        """
+        Moves a resource on the remote SFTP server.
+
+        parameters
+            src_path
+                local path of the resource before it was moved
+
+            dest_path
+                local path of the resource after it was moved
+        """
         remote_src_path = self.mapper.map_to_remote_path(src_path)
         remote_dest_path = self.mapper.map_to_remote_path(dest_path)
 
-        cmd = 'mv "' + remote_src_path + '" ' +  remote_dest_path + '"'
+        cmd = 'mv "' + remote_src_path + '" ' + remote_dest_path + '"'
         self.sftp_con.ssh_conn.execute(cmd)
         logging.info("Executed: {}".format(cmd))
 
+
 def main():
     pass
-    
+
+
 if __name__ == '__main__':
     main()
