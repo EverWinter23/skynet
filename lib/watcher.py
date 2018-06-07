@@ -9,8 +9,8 @@ from watchdog.events import PatternMatchingEventHandler
 from watchdog.events import DirCreatedEvent
 from watchdog.events import DirModifiedEvent
 
-# watcher on the wall
-class Watcher(PatternMatchingEventHandler):
+
+class Watcher(PatternMatchingEventHandler):  # watcher on the wall
     """
     Watches a dir for any changes within that dir for any
     file system event (create, delete, rename, move etc...)
@@ -28,70 +28,74 @@ class Watcher(PatternMatchingEventHandler):
             onto the disk using SQLiteDB for recoverability and
             fault tolerance.
     """
-    def __init__(self, complete_sync = False, **kwargs):
+
+    def __init__(self, complete_sync=False, **kwargs):
         super(Watcher, self).__init__(**kwargs)
-        logging.info("Night gathers, and now my watch begins.")  
+        logging.info("Night gathers, and now my watch begins.")
 
         self.complete_sync = complete_sync
+        # TODO: Path for database
         self._q = Q(path='skynet_db', auto_commit=True, multithreading=True)
-        
-    
-    """
-    Called when a file or dir is created.
-    NOTE:
-        If a dir is created in the dir being monitored, there is no
-        need to take any action for it.
-        It will automatically be created on the remote SFTP server
-        if it contains any file.          
-    """
+
     def on_created(self, event):
+        """
+        Called when a file or dir is created.
+        NOTE:
+            If a dir is created in the dir being monitored, there is no
+            need to take any action for it.
+            It will automatically be created on the remote SFTP server
+            if it contains any file.
+        """
+
         if not isinstance(event, DirCreatedEvent):
             logging.info("Recorded creation: {}".format(event.src_path))
             self._q.put({'action': 'send', 'src_path': event.src_path})
 
-    """
-    Called when a file or dir is deleted.
-    NOTE:
-        It will only delete the files present on the remote dir
-        which are not present in the local dir only if complete-sync
-        is set to True.
-    """ 
-    def on_deleted(self, event):        
+    def on_deleted(self, event):
+        """
+        Called when a file or dir is deleted.
+        NOTE:
+            It will only delete the files present on the remote dir
+            which are not present in the local dir only if complete-sync
+            is set to True.
+        """
+
         if self.complete_sync:
             logging.info("Recorded deletion: {}".format(event.src_path))
             self._q.put({'action': 'delete', 'src_path': event.src_path})
-    
-    """
-    Called when a file or dir is modified.
-    NOTE:
-        The mtime (modification time) of the directory changes
-        only when a file or a subdirectory is added, removed or 
-        renamed.
 
-        Modifying the contents of a file within the directory
-        does not change the directory itself, nor does updating 
-        the modified times of a file or a subdirectory.
-
-        Thus, if a dir is modified , no action will be taken.
-        However, if a file is modified, we will send a the whole
-        file, which will be overwritten in the remote dir.
-
-        Sending the whole file is a viable option, because:
-            1. Images have small sizes.
-            2. Videos will not be modified - processing will be done
-               by the processing team. 
-    """
     def on_modified(self, event):
+        """
+        Called when a file or dir is modified.
+        NOTE:
+            The mtime (modification time) of the directory changes
+            only when a file or a subdirectory is added, removed or
+            renamed.
+
+            Modifying the contents of a file within the directory
+            does not change the directory itself, nor does updating
+            the modified times of a file or a subdirectory.
+
+            Thus, if a dir is modified , no action will be taken.
+            However, if a file is modified, we will send a the whole
+            file, which will be overwritten in the remote dir.
+
+            Sending the whole file is a viable option, because:
+                1. Images have small sizes.
+                2. Videos will not be modified - processing will be done
+                by the processing team.
+        """
+
         if not isinstance(event, DirModifiedEvent):
             logging.info("Recorded modification: {}".format(event.src_path))
             self._q.put({'action': 'send', 'src_path': event.src_path})
-    
-    """
-    Called when a file or dir is renamed or moved.
-    """
+
     def on_moved(self, event):
+        """
+        Called when a file or dir is renamed or moved.
+        """
+
         logging.info("Recorded move: \'{}\'->\'{}\'".format(
             event.src_path, event.dest_path))
         self._q.put({'action': 'move', 'src_path': event.src_path,
                      'dest_path': event.dest_path})
-        
