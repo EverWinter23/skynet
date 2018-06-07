@@ -21,7 +21,8 @@ DIR_PATH = os.path.join(HOME, SKYNET)
 # should work for both windows as well as linux, hopefully ;-)
 FILE_PATH = os.path.join(DIR_PATH, CONFIG_FILE)
 
-# TODO: Remove port -> no port forwarding? ANDROID???
+# TODO: Remove port -> port forwarding --ANDROID YES
+
 
 def _get_config():
     """
