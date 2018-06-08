@@ -79,3 +79,9 @@
 + Implemented a cli to generate the config file.
 + Started working on re-establishing connection b/w the local m/c and the SFTP server.
 + Learnt about Image Segmentation of GCP points.
+
+## Thursday 7th June 2018
++ Ran coala --code linter, over the project. Made it compatible with pep8 guidelines.
++ Completed the skynet.py module.
++ When the connection is lost - the daemon keeps on trying to re-establish conn with the 
+  SFTP server.
