@@ -8,7 +8,6 @@ import lib.logger as log
 from configparser import ConfigParser
 from watchdog.observers import Observer
 from lib.mapper import Mapper
-from lib.parser import Parser
 from threading import Thread
 from lib.sftpcon import SFTPCon
 from lib.watcher import Watcher
@@ -19,39 +18,51 @@ from datetime import datetime
 SERVER = 'SERVER'
 SYNC = 'SYNC'
 
+
 class SkyNet:
     """
     parameters
-        config_file
+        config_file: str
             path to the config file
 
-        logging_lvl
+        logging_lvl: str
             sets the logging level of the logger, logging messages
             which are less severe than level will be ignored.
     """
+
     def __init__(self, config_file, logging_lvl):
+
         # setup logging
         self.logger = log.get_logger(log.lvl_mapping[logging_lvl])
 
         # get the configuration from the config file
         self.config = ConfigParser(allow_no_value=True)
         self.config.read(config_file)
+        self.logger.info('Parsed the configuration file.')
 
         # static configuration --the mappings will not change
+        self.logger.info('Init. Mapper.')
         self.mapper = self._get_mapper()
-        
+        self.logger.info('Initialized Mapper.')
+
         # watcher will notify us of any file system events
+        self.logger.info('Init. Watcher.')
         self.watcher = self._get_watcher()
+        self.logger.info('Initialized Mapper.')
 
         # observer to monitor the directory --and notify watcher
-        self._thread_observer_ = Observer() 
-        
-        # NOTE: 
+        self.logger.info('Init. Observer thread.')
+        self._thread_observer_ = Observer()
+        self.logger.info('Initialized Observer thread.')
+
+        # NOTE:
         #   Please be aware of local_root and local_base, they're DIFFERENT
-        self._thread_observer_.schedule(watcher, path=mapper.local_base, 
+        #   event_handler is diff from our handler --totally different CONTEXT
+        self._thread_observer_.schedule(event_handler=self.watcher,
+                                        path=self.mapper.local_base,
                                         recursive=True)
-        
-        # NOTE: 
+
+        # NOTE:
         #   If inotify exception occurs during execution
         #   that probably means that their are too many
         #   files to be monitored.
@@ -59,12 +70,13 @@ class SkyNet:
         #   can be monitored --see LOG.md for details on
         #   how to do that.
         try:
+            self.logger.info('Starting _thread_observer_')
             self._thread_observer_.start()
+            self.logger.info('Started _thread_observer_')
         except Exception as error:
             logging.info('exiting...')
             logging.info('Cause: {}'.format(error))
             sys.exit()
-
 
         # dynamic configuration --guard against conn drop,restablishing conn
         self.sftpcon = self._get_connection()
@@ -72,64 +84,109 @@ class SkyNet:
         self.handler = None
         self._thread_handler_ = None
         # start the daemon
+        self.logger.info('Daemon started.')
         self._start_execution()
-                    
-    """
-    TODO: Add desc
-    """
-    def _start_execution():
+
+    def _stop_execution(self):
+        """
+        TODO: Add desc
+        """
+        self.logger.info('Stopping _thread_observer_')
+        self._thread_observer_.stop()
+
+        if self._thread_handler_ is not None:
+            self.logger.info('Stopping _thread_handler_')
+            self._thread_handler_.stop()
+
+        self.logger.info('Waiting for threads to join in.')
+        self._thread_observer_.join()
+        self._thread_handler_.join()
+
+        self.logger.info('Exiting gracefully.')
+
+    def _start_execution(self):
+        """
+        TODO: Add desc
+        """
+
         # while conn exists
         # TODO: Add control flow desc
-        while self.sftpcon is not None:            
+        while self.sftpcon is not None:
             if self.handler is None:
                 # init handler --to execute actions recorded by the watcher
-                self.handler = Handler(sftp_con=sftpcon, mapper=mapper)
-                self._thread_handler_ = Thread(target=handler.runner)
-                
+                self.logger.info('Init. Handler.')
+                self.handler = Handler(
+                    sftp_con=self.sftpcon, mapper=self.mapper)
+                self.logger.info('Initialized Handler.')
+
+                self._thread_handler_ = Thread(target=self.handler.runner)
+
                 try:
+                    self.logger.info('Starting _thread_handler_')
                     self._thread_handler_.start()
-                except KeyboardInterrupt:
-                    logger.info('Stopping handler --KeyboardInterrupt')
-                    return
+                    self.logger.info('Started _thread_handler_')
+
                 except Exception as error:
                     logger.error('Cause: {}'.format(error))
                     self.sftpcon = self._get_connection()
                     # need to get a new handler, this handler's done
+                    self.logger.info('Discarding the current handler.')
                     self.handler = None
 
-    """
-    TODO: Add desc
-    """
     def _get_connection(self):
+        """
+        TODO: Add desc
+        """
         sftpcon = None
         while True:
             try:
                 # try to connect
-                sftpcon = SFTPCon(host=self.config[SERVER]['remote_host'], 
+                self.logger.info('Init SFTPCon.')
+                sftpcon = SFTPCon(host=self.config[SERVER]['remote_host'],
+                                  # Ignore LineLengthBear, PyCodeStyleBear
                                   username=self.config[SERVER]['remote_username'],
-                                  password=self.config[SERVER]['remote_password'])
+                                  password=self.config[SERVER]['remote_password'])  # Ignore LineLengthBear, PyCodeStyleBear
+
                 # must've obtained the connection
+                self.logger.info('Initialized SFTPCon.')
                 return sftpcon
+
             except Exception as error:
-                logger.error('Cause: {}'.format(error))
-                logger.info('Sleeping... at {}'.format(now()))
-                sleep(300)  # check every five minutes
-                logger.info('Woke up... at {}'.format(now()))
+                self.logger.error('Cause: {}'.format(error))
+                self.logger.info('Sleeping... at {}'.format(now()))
+                sleep(5)  # check every five minutes TODO: testing for 5sec
+                self.logger.info('Woke up... at {}'.format(now()))
                 continue
-            
-    """
-    TODO: Add desc
-    """
+
     def _get_watcher(self):
-        ignore_patterns = list(self.config[SYNC]['ignore_patterns']).split(' ')
+        """
+        TODO: Add desc
+        """
+        # logs params passed to the Watcher --useful for debugging
+        self.logger.info('ignore_patterns={}'.format(
+            self.config[SYNC]['ignore_patterns']))
+        self.logger.info('complete_sync={}'.format(
+            self.config[SYNC]['complete_sync']))
+
+        ignore_patterns = list(self.config[SYNC]['ignore_patterns'].split(' '))
         return Watcher(complete_sync=self.config[SYNC]['complete_sync'],
                        ignore_patterns=ignore_patterns)
-               
-    """
-    TODO: Add desc
-    """
+
     def _get_mapper(self):
-        return Mapper(local_root=self.config[SYNC]['local_dir'],
-                     local_dir=self.config[SYNC]['local_dir'],
-                     remote_root=self.config[SYNC]['remote_root'],
-                     remote_dir=self.config[SYNC]['remote_dir'])
+        """
+        TODO: Add desc
+        """
+        # logs params passed to the Mapper --useful for debugging
+        self.logger.info('local_dir={}'.format(
+            self.config[SYNC]['local_dir']))
+        self.logger.info('local_root={}'.format(
+            self.config[SYNC]['local_root']))
+        self.logger.info('remote_root={}'.format(
+            self.config[SYNC]['remote_root']))
+        self.logger.info('remote_dir={}'.format(
+            self.config[SYNC]['remote_dir']))
+
+        return Mapper(local_root=self.config[SYNC]['local_root'],
+                      local_dir=self.config[SYNC]['local_dir'],
+                      remote_root=self.config[SYNC]['remote_root'],
+                      remote_dir=self.config[SYNC]['remote_dir'])
