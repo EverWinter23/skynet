@@ -23,7 +23,7 @@ lvl_mapping = {
 
 
 def get_logger(level=logging.INFO):
-    logFormat = '[%(filename)s %(levelname)s]: %(message)s'
+    logFormat = '[%(levelname)s %(filename)s %(lineno)d]: %(message)s'
     logging.basicConfig(filename='skynet.log', level=level,
                         filemode='w', format=logFormat)
 
