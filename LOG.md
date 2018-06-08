@@ -9,7 +9,8 @@ By default Linux has `ssh` pre-installed for outgoing connections, but it does
 not have `ssh-server` for incoming connections.
 
     sudo apt install openssh-server
-`ssh-server` by default runs on port 22.
+`ssh-server` runs on port 22, by default, but support for port forwarding has
+also been added because on android devices the SFTP server runs on port 2222.
 
 **Windows**
 
@@ -117,7 +118,11 @@ Sending the whole file is a viable option, because:
 If a dir is created in the dir being monitored, there is no need to take any 
 action for it. It will automatically be created on the remote SFTP server if it 
 contains any file during the file transer. 
-If a file is created, then we'll transfer that file.
+If a file is created in the local dir, then we'll transfer that file to the
+remote dir.
+
+NOTE: But frist we'll make sure that the path leading up to the file, exists,
+--we'll create parent dirs as needed.
 
 **Resource Deletion**
 
@@ -134,6 +139,8 @@ in the local dir.
 
 If a resource (file/dir) is moved inside the local dir which is being monitored, we simply mimic the move on the remote SFTP server.
 
+NOTE: But frist we'll make sure that the path leading up to the new destination
+of the file, exists, --we'll create parent dirs as needed.
 
 ## Syncing local dir with remote dir
 
@@ -178,8 +185,32 @@ corresponding file system event.
     self._q.put({'action': 'move', 'src_path': event.src_path,
                  'dest_path': event.dest_path})
 
-Whilst, the handler.py module waits for any item to be enQ'd and processes the actions, by
-deQing the actions only if they are successful. If the the required processing corresponding 
-to an action runs into any error, the action is enQ'd again.
+Whilst, the handler.py module checks the Q for any pending actions --which have not
+been executed yet. 
 
-NOTE: handler.py and watcher.py run independent of each other. 
+**[DISCARDED] EnQing at the End if action unsuccessful**: This approach was discarded
+because it introduced bugs. Consider a scenario in which a file was created inside the
+dir being monitored and that action failed --due to conn. problems. And another action
+was enQ'd to the Q on that same file --let's assume delete action.
+If the process was to continue, it would try to delete a file which has not even been
+trasnferred to the remote SFTP server. Of course this is only one scenario out of all
+possible scenarios.
+
+**[IMPLEMENTED] Commiting only if successful:** This approach guarantees, that any
+action which runs into error will not be lost --because we only commit the changes
+to the Q when the action is successful.
+Another scenario is that the action completes, but it is not commited --due to any
+error b/w the line in which the action was completed and the line in which it the 
+action was going to be commited. What this means is that the action will be executed
+twice, although it may try to delete a file which has already been deleted --we have
+a try and catch mechanism for that in place to guard agains that, but this approach
+makes sure that the actions are executed inorder. 
+
+        # snippet from the code that makes the above approach possible
+        # NOTE:
+        #   auto_commit = False in this declaration, this ensures that
+        #   when we deQ something from the Q, the change is not committed
+        #   until and unless the action is completed.
+        self._q = Q(path='skynet_db', auto_commit=False, multithreading=True)
+
+NOTE: handler.py and watcher.py run independent of each other, --as threads.
