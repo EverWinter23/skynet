@@ -78,8 +78,6 @@ class SkyNet:
             logging.info('Cause: {}'.format(error))
             sys.exit()
 
-        # dynamic configuration --guard against conn drop,restablishing conn
-        self.sftpcon = self._get_connection()
         # also need a handler to handle the actual transfers
         self.handler = None
         self._thread_handler_ = None
@@ -108,9 +106,11 @@ class SkyNet:
         """
         TODO: Add desc
         """
+        # dynamic configuration --guard against conn drop,restablishing conn
+        self.sftpcon = self._get_connection()
 
         # while conn exists
-        # TODO: Add control flow desc
+        # TODO: Add control flow desc --also we're looping too much
         while self.sftpcon is not None:
             if self.handler is None:
                 # init handler --to execute actions recorded by the watcher
@@ -125,13 +125,16 @@ class SkyNet:
                     self.logger.info('Starting _thread_handler_')
                     self._thread_handler_.start()
                     self.logger.info('Started _thread_handler_')
-
                 except Exception as error:
                     logger.error('Cause: {}'.format(error))
                     self.sftpcon = self._get_connection()
                     # need to get a new handler, this handler's done
                     self.logger.info('Discarding the current handler.')
                     self.handler = None
+            else:
+                self.logger.info('_start_exec sleeping at {}'.format(now()))
+                sleep(5)  # if we have a handler --sleep for 5 minutes
+                self.logger.info('_start_exec woke up. at {}'.format(now()))
 
     def _get_connection(self):
         """
@@ -143,6 +146,7 @@ class SkyNet:
                 # try to connect
                 self.logger.info('Init SFTPCon.')
                 sftpcon = SFTPCon(host=self.config[SERVER]['remote_host'],
+                                  port=int(self.config[SERVER]['remote_port']),
                                   # Ignore LineLengthBear, PyCodeStyleBear
                                   username=self.config[SERVER]['remote_username'],
                                   password=self.config[SERVER]['remote_password'])  # Ignore LineLengthBear, PyCodeStyleBear
@@ -153,9 +157,9 @@ class SkyNet:
 
             except Exception as error:
                 self.logger.error('Cause: {}'.format(error))
-                self.logger.info('Sleeping... at {}'.format(now()))
+                self.logger.info('_get_conn sleeping at {}'.format(now()))
                 sleep(5)  # check every five minutes TODO: testing for 5sec
-                self.logger.info('Woke up... at {}'.format(now()))
+                self.logger.info('_get_conn woke up at {}'.format(now()))
                 continue
 
     def _get_watcher(self):
