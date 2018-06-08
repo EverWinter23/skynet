@@ -113,6 +113,8 @@ def _config():
                         'remote_password': remote_password}
 
     config['SYNC'] = {sync_msg: None,
+                      complete_sync_msg: None,
+                      'complete_sync': complete_sync,
                       local_root_msg: None,
                       'local_root': local_root,
                       ignore_msg: None,
