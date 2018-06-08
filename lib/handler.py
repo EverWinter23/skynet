@@ -133,7 +133,7 @@ class Handler:
         """
         remote_src_path = self.mapper.map_to_remote_path(src_path)
         remote_dest_path = self.mapper.map_to_remote_path(dest_path)
-        
+
         # NOTE: For moving any file, make sure all parent dir
         #       exist, if not make them.
         # mkdir -p: no errors if existing, make parent dirs as needed
@@ -141,8 +141,8 @@ class Handler:
         cmd = 'mkdir -p "' + parent_path + '"'
         # TODO: Instead of executing, right away store the command
         #       Add thread to execute the commands
-        self.sftp_con.ssh_conn.execute(cmd)        
-        logging.info("Executed: {}".format(cmd))   
+        self.sftp_con.ssh_conn.execute(cmd)
+        logging.info("Executed: {}".format(cmd))
 
         cmd = 'mv "' + remote_src_path + '" "' + remote_dest_path + '"'
         self.sftp_con.ssh_conn.execute(cmd)
