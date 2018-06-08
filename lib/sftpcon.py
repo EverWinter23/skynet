@@ -48,15 +48,13 @@ class SFTPCon:
         if private_key_file is None:
             cnopts.hostkeys = None
 
-        logging.info(
-            'initializing connection with the following information...')
-        logging.info('hostname: {}'.format(host))
-        logging.info('username: {}'.format(username))
-        logging.info('password: {}'.format(password))
-        logging.info('port: {}'.format(port))
-        logging.info('private_key_file: {}'.format(private_key_file))
-        logging.info('private_key_password: {}'.format(private_key_password))
-        logging.info('compression: {}'.format(compression))
+        logging.info('hostname={}'.format(host))
+        logging.info('username={}'.format(username))
+        logging.info('password={}'.format(password))
+        logging.info('port={}'.format(port))
+        logging.info('private_key_file={}'.format(private_key_file))
+        logging.info('private_key_password={}'.format(private_key_password))
+        logging.info('compression={}'.format(compression))
 
         self.ssh_prefix = username + '@' + password
 
