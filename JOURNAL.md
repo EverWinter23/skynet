@@ -85,3 +85,9 @@
 + Completed the skynet.py module.
 + When the connection is lost - the daemon keeps on trying to re-establish conn with the 
   SFTP server.
+
+## Frdiay 8th June 2018
++ Will document the changes made to LOG.md
++ Started working on addin support for port forwarding --because android's SFTP server runs
+  on port 2222.
++ Test skynet.py --to check wheather or not it works as expected using SFTP server.
