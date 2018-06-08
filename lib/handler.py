@@ -47,11 +47,19 @@ class Handler:
             entry = self._q.get()
             try:
                 if entry['action'] == 'send':
+                    logging.info('Sending resource.')
                     self.send_resource(entry['src_path'])
+                    logging.info('Resource sent.')
+
                 elif entry['action'] == 'delete':
+                    logging.info('Deleting resource.')
                     self.delete_resource(entry['src_path'])
+                    logging.info('Deleting resource.')
+
                 elif entry['action'] == 'move':
+                    logging.info('Moving resource.')
                     self.move_resource(entry['src_path'], entry['dest_path'])
+                    logging.info('Moving resource.')
 
                 # commit changes, i.e. commit deQ
                 self._q.task_done()
@@ -71,8 +79,7 @@ class Handler:
                 """
                 # self._q.put(entry)
                 logging.error('ERROR: {}'.format(error))
-                logging.info('Exiting...')
-                exit()
+                logging.info('Continuing gracefully.')
 
     def send_resource(self, src_path):
         """
@@ -92,8 +99,8 @@ class Handler:
         #       Add thread to execute the commands
 
         self.sftp_con.ssh_conn.execute(cmd)
-        self.sftp_con.ssh_conn.put(src_path, remote_path)
         logging.info("Executed: {}".format(cmd))
+        self.sftp_con.ssh_conn.put(src_path, remote_path)
 
     def delete_resource(self, src_path):
         """
@@ -126,8 +133,18 @@ class Handler:
         """
         remote_src_path = self.mapper.map_to_remote_path(src_path)
         remote_dest_path = self.mapper.map_to_remote_path(dest_path)
+        
+        # NOTE: For moving any file, make sure all parent dir
+        #       exist, if not make them.
+        # mkdir -p: no errors if existing, make parent dirs as needed
+        parent_path = os.path.split(remote_dest_path)[0]
+        cmd = 'mkdir -p "' + parent_path + '"'
+        # TODO: Instead of executing, right away store the command
+        #       Add thread to execute the commands
+        self.sftp_con.ssh_conn.execute(cmd)        
+        logging.info("Executed: {}".format(cmd))   
 
-        cmd = 'mv "' + remote_src_path + '" ' + remote_dest_path + '"'
+        cmd = 'mv "' + remote_src_path + '" "' + remote_dest_path + '"'
         self.sftp_con.ssh_conn.execute(cmd)
         logging.info("Executed: {}".format(cmd))
 
