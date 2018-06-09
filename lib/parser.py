@@ -19,3 +19,7 @@ class Parser(ArgumentParser):
         # for changing or generating config
         self.add_argument("--config", action='store_true',
                           help="configure settings")
+
+        # for specifying a specific config file
+        self.add_argument("--config-file",
+                          help='specify a configuration file')
