@@ -38,7 +38,7 @@ class SkyNet:
         # get the configuration from the config file
         self.config = ConfigParser(allow_no_value=True)
         self.config.read(config_file)
-        self.logger.info('Parsed the configuration file.')
+        self.logger.info('Parsed the config_file->{}'.format(config_file))
 
         # static configuration --the mappings will not change
         self.logger.info('Init. Mapper.')
@@ -132,9 +132,10 @@ class SkyNet:
                     self.logger.info('Discarding the current handler.')
                     self.handler = None
             else:
-                self.logger.info('_start_exec sleeping at {}'.format(now()))
-                sleep(5)  # if we have a handler --sleep for 5 minutes
-                self.logger.info('_start_exec woke up. at {}'.format(now()))
+                self.logger.info('Handler exists _start_execution will sleep.')
+                self.logger.info('_exec slept->{}'.format(datetime.now()))
+                sleep(30)  # if we have a handler --sleep for 5 minutes
+                self.logger.info('_exec got up->{}'.format(datetime.now()))
 
     def _get_connection(self):
         """
@@ -157,9 +158,9 @@ class SkyNet:
 
             except Exception as error:
                 self.logger.error('Cause: {}'.format(error))
-                self.logger.info('_get_conn sleeping at {}'.format(now()))
+                self.logger.info('_get_con slept->{}'.format(datetime.now()))
                 sleep(5)  # check every five minutes TODO: testing for 5sec
-                self.logger.info('_get_conn woke up at {}'.format(now()))
+                self.logger.info('_get_con got up->{}'.format(datetime.now()))
                 continue
 
     def _get_watcher(self):
