@@ -48,18 +48,10 @@ class SFTPCon:
         if private_key_file is None:
             cnopts.hostkeys = None
 
-        logging.info('hostname={}'.format(host))
-        logging.info('username={}'.format(username))
-        logging.info('password={}'.format(password))
-        logging.info('port={}'.format(port))
-        logging.info('private_key_file={}'.format(private_key_file))
-        logging.info('private_key_password={}'.format(private_key_password))
-        logging.info('compression={}'.format(compression))
-
         self.ssh_prefix = username + '@' + password
 
         if password == '':
-            logging.debug('no password provided, using key auth...')
+            logging.debug('No password provided, using key auth.')
             try:
                 self.ssh_conn = Connection(host, username=username,
                                            port=port,
@@ -69,21 +61,14 @@ class SFTPCon:
                                            cnopts=cnopts)
 
             except Exception as error:
-                logging.debug('key auth failed...')
                 logging.error('cause: {}'.format(error))
-                logging.info('please check the config file...')
-                exit()
 
         if self.ssh_conn is None:
             try:
                 self.ssh_conn = Connection(host, username=username, port=port,
                                            password=password, cnopts=cnopts)
             except Exception as error:
-                logging.info('failed to connect to SFTP server...')
                 logging.error('cause: {}'.format(error))
-                logging.info('please check the config file...')
-                logging.info('please ensure that SFTP server is running...')
-                exit()
 
 
 def main():
