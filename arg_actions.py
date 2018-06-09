@@ -26,16 +26,24 @@ FILE_PATH = os.path.join(DIR_PATH, CONFIG_FILE)
 
 def _get_config():
     """
-    Return the path of the config file
+    Returns the path of the config file.
     """
     return FILE_PATH
 
 
 def _check_config():
     """
-    Check whether the config file exists or not
+    Check whether the config file exists or not.
     """
     return Path(FILE_PATH).exists()
+
+
+def _load_config(file_path):
+    """
+    Change the default file path to the file specified.
+    """
+    global FILE_PATH
+    FILE_PATH = file_path
 
 
 def _config():
