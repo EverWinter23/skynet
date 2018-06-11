@@ -33,6 +33,9 @@ def main():
         arg_actions._version()
         # exit after printing version
         sys.exit()
+    if args.config_file:
+        print('Loading the specified configuration settings.')
+        arg_actions._load_config(args.config_file)
 
     skynet = SkyNet(config_file=arg_actions._get_config(),
                     logging_lvl=args.logging)
