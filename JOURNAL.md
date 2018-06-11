@@ -87,7 +87,14 @@
   SFTP server.
 
 ## Frdiay 8th June 2018
-+ Will document the changes made to LOG.md
-+ Started working on addin support for port forwarding --because android's SFTP server runs
++ Add detailed decription about the changes made to incorporate recoverability to LOG.md.
++ Started working on adding support for port forwarding --because android's SFTP server runs
   on port 2222.
-+ Test skynet.py --to check wheather or not it works as expected using SFTP server.
++ Test skynet.py --to check whether or not it works as expected using SFTP server.
+
+## Monday 11th June 2018
++ skynet now supports port forwarding. 
++ Also added the capability to recover from conn loss mid-transfer, or mid-execution.
++ After the connection is lost, the daemon keeps on trying to re-establish the conn and
+  is also able to resume from the state the during which the action was halted.
++ To further extend skynet, will start working on incorporating it with cloud storage services.
