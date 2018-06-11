@@ -79,8 +79,14 @@ class SkyNet:
             sys.exit()
 
         # also need a handler to handle the actual transfers
-        self.handler = None
-        self._thread_handler_ = None
+        '''
+        self.handler = Handler(mapper=self.mapper)
+        self._thread_handler_ = Thread(target=self.handler.run)
+        '''
+        self._thread_handler_ = Handler(mapper=self.mapper)
+
+        # the ssh connection
+        self.sftpcon = None
         # start the daemon
         self.logger.info('Daemon started.')
         self._start_execution()
@@ -106,35 +112,35 @@ class SkyNet:
         """
         TODO: Add desc
         """
-        # dynamic configuration --guard against conn drop,restablishing conn
-        self.sftpcon = self._get_connection()
 
         # while conn exists
         # TODO: Add control flow desc --also we're looping too much
-        while self.sftpcon is not None:
-            if self.handler is None:
+        while True:
+            if self._thread_handler_._is_running is False:
+                # dynamic configuration --guard against conn drop, re-estd conn
+                self.sftpcon = self._get_connection()
+
+                self._thread_handler_ = Handler(mapper=self.mapper)
                 # init handler --to execute actions recorded by the watcher
-                self.logger.info('Init. Handler.')
-                self.handler = Handler(
-                    sftp_con=self.sftpcon, mapper=self.mapper)
-                self.logger.info('Initialized Handler.')
+                self.logger.info('_thread_handler_ obtaining new connection.')
+                self._thread_handler_.schedule(sftpcon=self.sftpcon)
+                self.logger.info('Actions for handler have been shceduled.')
 
-                self._thread_handler_ = Thread(target=self.handler.runner)
-
+                # try-catch seems redundant
                 try:
                     self.logger.info('Starting _thread_handler_')
                     self._thread_handler_.start()
                     self.logger.info('Started _thread_handler_')
                 except Exception as error:
-                    logger.error('Cause: {}'.format(error))
+                    self.logger.error('Cause: {}'.format(error))
                     self.sftpcon = self._get_connection()
                     # need to get a new handler, this handler's done
-                    self.logger.info('Discarding the current handler.')
-                    self.handler = None
+                    self.logger.info('_thread_handler_ halted.')
+                    self.logger.info('The scheduled actions have been paused.')
             else:
-                self.logger.info('Handler exists _start_execution will sleep.')
+                self.logger.info('The scheduled actions are executing.')
                 self.logger.info('_exec slept->{}'.format(datetime.now()))
-                sleep(30)  # if we have a handler --sleep for 5 minutes
+                sleep(10)  # if we have a handler --sleep for 5 minutes
                 self.logger.info('_exec got up->{}'.format(datetime.now()))
 
     def _get_connection(self):
