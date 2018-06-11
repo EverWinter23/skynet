@@ -2,6 +2,7 @@
 3rd june 2018 friday
 '''
 
+from threading import Thread
 import logging
 from persistqueue import FIFOSQLiteQueue as Q
 
@@ -15,23 +16,21 @@ import os
 # Handling conn. exceptions becomes very important here.
 
 
-class Handler:
+class Handler(Thread):
     """
     Handles the transfers, and mimics them on the SFTP server.
     NOTE: Resource in this context refers to file or dir unless
           explicitly specified.
 
     parameters
-        sftp_con: SFTPCon
-            An instance of SFTPCon class to transfer files and interact
-            with the remote SFTP server.
         mapper: Mapper
             An instance of Mapper class to map local files to their
             respective paths on the SFTP server.
     """
 
-    def __init__(self, sftp_con, mapper):
-        self.sftp_con = sftp_con
+    def __init__(self, mapper):
+        Thread.__init__(self)
+        self._is_running = False
         self.mapper = mapper
         # NOTE:
         #   auto_commit = False in this declaration, this ensures that
@@ -39,12 +38,27 @@ class Handler:
         #   until and unless the action is completed.
         self._q = Q(path='skynet_db', auto_commit=False, multithreading=True)
 
-    def runner(self):
+    def schedule(self, sftpcon):
         """
-        Retrieve actions stored by watcher.py and execute them one by one.
+        parameters
+            sftpcon: SFTPCon
+                An instance of SFTPCon class to transfer files and interact
+                with the remote SFTP server.
         """
+        self.sftpcon = sftpcon
+
+    def run(self):
+        """
+        Retrieve actions stored by the Watcher and execute them one by one.
+        """
+        self._is_running = True
+
         while True:
             entry = self._q.get()
+            # NOTE: TODO
+            # seconds to wait for a pending read/write
+            # operation before raising socket.timeout.
+            self.sftpcon.ssh_conn.timeout = 5
             try:
                 if entry['action'] == 'send':
                     logging.info('Sending resource.')
@@ -63,7 +77,9 @@ class Handler:
 
                 # commit changes, i.e. commit deQ
                 self._q.task_done()
-            except Exception as error:
+                logging.info("Commited change to the DB.")
+
+            except FileNotFoundError as error:
                 """
                 NOTE:  Need for auto_commit to be False
                     This was what I was doing previously->which can lead to
@@ -81,6 +97,16 @@ class Handler:
                 logging.error('ERROR: {}'.format(error))
                 logging.info('Continuing gracefully.')
 
+            except Exception as error:
+                # mostly connection errors
+                logging.error('ERROR: {}'.format(error))
+                logging.info('Handler stopping thread.')
+                self.stop()
+                return
+
+    def stop(self):
+        self._is_running = False
+
     def send_resource(self, src_path):
         """
         Transfers a resource(file) to the remote SFTP server.
@@ -94,13 +120,13 @@ class Handler:
         #       exist, if not make them.
         # mkdir -p: no errors if existing, make parent dirs as needed
         parent_path = os.path.split(remote_path)[0]
-        cmd = 'mkdir -p "' + parent_path + '"'
+        # cmd = 'mkdir -p "' + parent_path + '"'
         # TODO: Instead of executing, right away store the command
         #       Add thread to execute the commands
 
-        self.sftp_con.ssh_conn.execute(cmd)
-        logging.info("Executed: {}".format(cmd))
-        self.sftp_con.ssh_conn.put(src_path, remote_path)
+        # self.sftpcon.ssh_conn.execute(cmd)
+        # logging.info("Executed: {}".format(cmd))
+        self.sftpcon.ssh_conn.put(src_path, remote_path)
 
     def delete_resource(self, src_path):
         """
@@ -117,7 +143,7 @@ class Handler:
         # TODO: Will not use rm -rf for testing purposes
         # cmd = 'rm -rf "' + remote_path + '"'
         cmd = 'rm -rf "' + remote_path + '"'
-        self.sftp_con.ssh_conn.execute(cmd)
+        self.sftpcon.ssh_conn.execute(cmd)
         logging.info("Executed: {}".format(cmd))
 
     def move_resource(self, src_path, dest_path):
@@ -141,11 +167,11 @@ class Handler:
         cmd = 'mkdir -p "' + parent_path + '"'
         # TODO: Instead of executing, right away store the command
         #       Add thread to execute the commands
-        self.sftp_con.ssh_conn.execute(cmd)
+        self.sftpcon.ssh_conn.execute(cmd)
         logging.info("Executed: {}".format(cmd))
 
         cmd = 'mv "' + remote_src_path + '" "' + remote_dest_path + '"'
-        self.sftp_con.ssh_conn.execute(cmd)
+        self.sftpcon.ssh_conn.execute(cmd)
         logging.info("Executed: {}".format(cmd))
 
 
