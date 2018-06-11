@@ -52,23 +52,19 @@ class SFTPCon:
 
         if password == '':
             logging.debug('No password provided, using key auth.')
-            try:
-                self.ssh_conn = Connection(host, username=username,
-                                           port=port,
-                                           private_key_file=private_key_file,
-                                           # Ignore LineLengthBear, PycodeStyleBear
-                                           private_key_password=private_key_password,
-                                           cnopts=cnopts)
-
-            except Exception as error:
-                logging.error('cause: {}'.format(error))
+            # NOTE:
+            #   Ducking exceptions, so that they can be handled
+            #   by the main module however it wants.
+            self.ssh_conn = Connection(host, username=username,
+                                       port=port,
+                                       private_key_file=private_key_file,
+                                       # Ignore LineLengthBear, PycodeStyleBear
+                                       private_key_password=private_key_password,
+                                       cnopts=cnopts)
 
         if self.ssh_conn is None:
-            try:
-                self.ssh_conn = Connection(host, username=username, port=port,
-                                           password=password, cnopts=cnopts)
-            except Exception as error:
-                logging.error('cause: {}'.format(error))
+            self.ssh_conn = Connection(host, username=username, port=port,
+                                       password=password, cnopts=cnopts)
 
 
 def main():
