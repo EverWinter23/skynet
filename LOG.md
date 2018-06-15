@@ -188,6 +188,14 @@ corresponding file system event.
 Whilst, the handler.py module checks the Q for any pending actions --which have not
 been executed yet. 
 
+# BUGS
+
+All the known bugs have been listed below, with their status.
+
+### BUG #1 [RESOLVED]
+
+How to handle actions which ran into error during their execution?
+
 **[DISCARDED] EnQing at the End if action unsuccessful**: This approach was discarded
 because it introduced bugs. Consider a scenario in which a file was created inside the
 dir being monitored and that action failed --due to conn. problems. And another action
@@ -214,3 +222,38 @@ makes sure that the actions are executed inorder.
         self._q = Q(path='skynet_db', auto_commit=False, multithreading=True)
 
 NOTE: handler.py and watcher.py run independent of each other, --as threads.
+
+### BUG #2 [RESOLVED]
+
+This bug arises when an action is unable to complete due to some error during its
+execution. The way that handler.py handles unsuccessfull actions right now, is that
+it simply accepts that some error occured, and proceeds with the execution of the
+pending actions. This causes a problem, because when that action is completed
+successfully, the change is comitted to the Database --resulting in loss of the action
+which could not complete successfully.
+
+However, if we were to keep on executing the same instruction until it executed
+successfully we would never get out of a state in which the execution of that action
+is simply not possible, here is an example to illustrate that scenario:
+
+Assume that:
+
+  + We do not have internet connection.
+  + The sequence of actions to be executed is, [SEND, MOVE] --and these actions
+  are to be carried out on the same file.
+  + Some other examples include, [MOVE, MOVE], [SEND, DELETE] etc.
+
+When the connection is re-estd., the handler tries to mimic the modification on
+the remote server, but the corresponding file does not exist locally because it 
+has been moved to some other folder. If were to keep re-executing this action, we
+would be unable to make any progress.
+
+**[IMPLEMENTED]** The same solution, mentioned above, fixes this problem. Because if an
+action were to run into an error due to connectivity issues --we are unable to commit
+the removal of that action from the persistQ and we resume the exectuion of that same
+instruction when the connection is re-estd.
+Moreover, if we run into a scenario described above, where we try to modify a file, 
+which has been moved to different location, it guarantees that we are not stuck in that
+state forever --because handler.py keeps proceeds with the execution of the pending
+actions.
+
