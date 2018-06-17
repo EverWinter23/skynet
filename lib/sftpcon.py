@@ -3,8 +3,10 @@
 '''
 
 from pysftp import Connection, CnOpts
-import os
 import logging
+
+# TODO: Support for windows
+import os
 
 
 class SFTPCon:
@@ -31,15 +33,14 @@ class SFTPCon:
             password to use, if private_key is encrypted
 
         compression:boolean
-            default False, use True to enable compression
+            default True, use True to disable compression
     """
 
     def __init__(self, host, username=None, password=None, port=22,
                  private_key_file=None, private_key_password=None,
-                 compression=False):
+                 compression=True):
 
-        self.ssh_prefix = None
-        self.ssh_conn = None
+        self._con = None
 
         # connection options
         cnopts = CnOpts()
@@ -48,53 +49,82 @@ class SFTPCon:
         if private_key_file is None:
             cnopts.hostkeys = None
 
-        self.ssh_prefix = username + '@' + password
-
-        if password == '':
+        if password is None:
             logging.debug('No password provided, using key auth.')
             # NOTE:
             #   Ducking exceptions, so that they can be handled
             #   by the main module however it wants.
-            self.ssh_conn = Connection(host, username=username,
-                                       port=port,
-                                       private_key_file=private_key_file,
-                                       # Ignore LineLengthBear, PycodeStyleBear
-                                       private_key_password=private_key_password,
-                                       cnopts=cnopts)
+            self._con = Connection(host=host, username=username,
+                                   port=port,
+                                   private_key_file=private_key_file,
+                                   # Ignore LineLengthBear, PycodeStyleBear
+                                   private_key_password=private_key_password,
+                                   cnopts=cnopts)
 
-        if self.ssh_conn is None:
-            self.ssh_conn = Connection(host, username=username, port=port,
-                                       password=password, cnopts=cnopts)
+        if self._con is None:
+            self._con = Connection(host, username=username, port=port,
+                                   password=password, cnopts=cnopts)
+
+    def _send(self, src_path, remote_path):
+        """
+        Transfers a resource(file) to the remote SFTP server.
+
+        parameters
+            src_path
+                local path of the resource to be sent
+
+            remote_path
+                mapped path of the src_path on the
+                remote storage
+        """
+        # NOTE: For transferring any file, make sure all parent dir
+        #       exist, if not make them.
+        # mkdir -p: no errors if existing, make parent dirs as needed
+        parent_path = os.path.split(remote_path)[0]
+        cmd = 'mkdir -p "' + parent_path + '"'
+
+        self._con.execute(cmd)
+        self._con.put(src_path, remote_path)
+
+    def _delete(self, remote_path):
+        """
+        Deletes a resource on the remote SFTP server.
+
+        parameters
+            remote_path
+                path of the resource to be deleted on
+                the remote storage
+        """
+        # NOTE: Very dangerous cmd, can delete everything inside a dir
+        #       Use with CAUTION!
+        # cmd = 'rm -rf "' + remote_path + '"'
+        self._con.execute(cmd)
+
+    def _move(self, remote_src_path, remote_dest_path):
+        """
+        Moves a resource on the remote SFTP server.
+
+        parameters
+            remote_src_path
+                remote path of the resource before it was moved
+
+            remote_dest_path
+                remote path of the resource after it was moved
+        """
+        # NOTE: For moving any file, make sure all parent dir
+        #       exist, if not make them.
+        # mkdir -p: no errors if existing, make parent dirs as needed
+        parent_path = os.path.split(remote_dest_path)[0]
+        cmd = 'mkdir -p "' + parent_path + '"'
+        self._con.execute(cmd)
+
+        cmd = 'mv "' + remote_src_path + '" "' + remote_dest_path + '"'
+        self._con.execute(cmd)
 
 
 def main():
-    # test settings
-    import time
-    start_time = time.time()
-
-    hostname = 'localhost'
-    username = 'frost'
-    password = 'finch75'
-
-    local_base = 'local_dir'
-    remote_base = 'home/frost/remote_dir'
-    conn = SFTPCon(host=hostname, username=username, password=password)
-
-    try:
-        conn.ssh_conn.put_r(local_path, remote_path)
-    except Exception as error:
-        conn.ssh_conn.mkdir(remote_path)
-        conn.ssh_conn.put_r(local_path, remote_path)
-
-    end_time = time.time()
-    print('total time to transfer 12MB = {}s.'.format(end_time - start_time))
+    pass
 
 
-def get_remote_path(self, local_path):
-    remote_relative = local_path[self._local_base_length:]
-    return self._remote_base + remote_relative
-
-
-# test module
 if __name__ == '__main__':
     main()
