@@ -6,8 +6,6 @@ from threading import Thread
 import logging
 from persistqueue import FIFOSQLiteQueue as Q
 
-# TODO: Support for windows
-import os
 
 # NOTE: We will duck the responsibility of handling exceptions, and
 #       will pass that responsibility to the module using this class,
@@ -18,14 +16,24 @@ import os
 
 class Handler(Thread):
     """
-    Handles the transfers, and mimics them on the SFTP server.
-    NOTE: Resource in this context refers to file or dir unless
-          explicitly specified.
+    The Handler class actually handles the transfers
+    between the local storage and the remote storage.
+
+    NOTE: Resource in this context refers to file or dir
+    unless explicitly specified.
 
     parameters
         mapper: Mapper
-            An instance of Mapper class to map local files to their
-            respective paths on the SFTP server.
+            An instance of Mapper class to map local files
+            to their respective paths on the SFTP server.
+
+    attributes
+        _is_running: boolean
+            Indicates the current status of the thread
+
+        _q: FFIOSQLiteQueue
+            Retrieves actions stored by the wathcer in the
+            Q and executes them when the connection exists.
     """
 
     def __init__(self, mapper):
@@ -38,27 +46,67 @@ class Handler(Thread):
         #   until and unless the action is completed.
         self._q = Q(path='skynet_db', auto_commit=False, multithreading=True)
 
-    def schedule(self, sftpcon):
+    def _schedule(self, con):
         """
         parameters
-            sftpcon: SFTPCon
-                An instance of SFTPCon class to transfer files and interact
-                with the remote SFTP server.
+            sftpcon: SFTPCon | S3Con
+                An instance of SFTPCon or S3Con class to
+                transfer files and interact with the remote
+                storage.
         """
-        self.sftpcon = sftpcon
+        self.con = con
+
+    def _update_status(self):
+        """
+        Changes the current status of the handler.
+        """
+        self._is_running = not self._is_running
+
+    def send_resource(self, src_path):
+        """
+        Transfers a resource(file) to the remote SFTP server.
+
+        parameters
+            src_path
+                local path of the resource to be sent
+        """
+        remote_path = self.mapper.map_to_remote_path(src_path)
+        self.con._send(src_path, remote_path)
+
+    def delete_resource(self, src_path):
+        """
+        Deletes a resource on the remote SFTP server.
+
+        parameters
+            src_path
+                local path of the resource to be deleted
+        """
+        remote_path = self.mapper.map_to_remote_path(src_path)
+        self.con._delete(remote_path)
+
+    def move_resource(self, src_path, dest_path):
+        """
+        Moves a resource on the remote SFTP server.
+
+        parameters
+            src_path
+                local path of the resource before it was moved
+
+            dest_path
+                local path of the resource after it was moved
+        """
+        remote_src_path = self.mapper.map_to_remote_path(src_path)
+        remote_dest_path = self.mapper.map_to_remote_path(dest_path)
+        self.con._move(remote_src_path, remote_dest_path)
 
     def run(self):
         """
-        Retrieve actions stored by the Watcher and execute them one by one.
+        Retrieves actions stored by the Watcher and execute them one by one.
         """
-        self._is_running = True
+        self._update_status()
 
         while True:
             entry = self._q.get()
-            # NOTE: TODO
-            # seconds to wait for a pending read/write
-            # operation before raising socket.timeout.
-            self.sftpcon.ssh_conn.timeout = 5
             try:
                 if entry['action'] == 'send':
                     logging.info('Sending resource.')
@@ -101,78 +149,8 @@ class Handler(Thread):
                 # mostly connection errors
                 logging.error('ERROR: {}'.format(error))
                 logging.info('Handler stopping thread.')
-                self.stop()
+                self._update_status()
                 return
-
-    def stop(self):
-        self._is_running = False
-
-    def send_resource(self, src_path):
-        """
-        Transfers a resource(file) to the remote SFTP server.
-
-        parameters
-            src_path
-                local path of the resource to be sent
-        """
-        remote_path = self.mapper.map_to_remote_path(src_path)
-        # NOTE: For transferring any file, make sure all parent dir
-        #       exist, if not make them.
-        # mkdir -p: no errors if existing, make parent dirs as needed
-        parent_path = os.path.split(remote_path)[0]
-        # cmd = 'mkdir -p "' + parent_path + '"'
-        # TODO: Instead of executing, right away store the command
-        #       Add thread to execute the commands
-
-        # self.sftpcon.ssh_conn.execute(cmd)
-        # logging.info("Executed: {}".format(cmd))
-        self.sftpcon.ssh_conn.put(src_path, remote_path)
-
-    def delete_resource(self, src_path):
-        """
-        Deletes a resource on the remote SFTP server.
-
-        parameters
-            src_path
-                local path of the resource to be deleted
-        """
-        remote_path = self.mapper.map_to_remote_path(src_path)
-
-        # NOTE: Very dangerous cmd, can delete everything inside a dir
-        #       Use with CAUTION!
-        # TODO: Will not use rm -rf for testing purposes
-        # cmd = 'rm -rf "' + remote_path + '"'
-        cmd = 'rm -rf "' + remote_path + '"'
-        self.sftpcon.ssh_conn.execute(cmd)
-        logging.info("Executed: {}".format(cmd))
-
-    def move_resource(self, src_path, dest_path):
-        """
-        Moves a resource on the remote SFTP server.
-
-        parameters
-            src_path
-                local path of the resource before it was moved
-
-            dest_path
-                local path of the resource after it was moved
-        """
-        remote_src_path = self.mapper.map_to_remote_path(src_path)
-        remote_dest_path = self.mapper.map_to_remote_path(dest_path)
-
-        # NOTE: For moving any file, make sure all parent dir
-        #       exist, if not make them.
-        # mkdir -p: no errors if existing, make parent dirs as needed
-        parent_path = os.path.split(remote_dest_path)[0]
-        cmd = 'mkdir -p "' + parent_path + '"'
-        # TODO: Instead of executing, right away store the command
-        #       Add thread to execute the commands
-        self.sftpcon.ssh_conn.execute(cmd)
-        logging.info("Executed: {}".format(cmd))
-
-        cmd = 'mv "' + remote_src_path + '" "' + remote_dest_path + '"'
-        self.sftpcon.ssh_conn.execute(cmd)
-        logging.info("Executed: {}".format(cmd))
 
 
 def main():
