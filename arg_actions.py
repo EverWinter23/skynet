@@ -9,7 +9,7 @@ from printmsgs import *
 
 # any changes to the version made here
 SKYNET = 'skynet'
-VERSION = '1.0'
+VERSION = '1.1'
 # name of config file
 CONFIG_FILE = 'config.ini'
 HOME = str(Path.home())
