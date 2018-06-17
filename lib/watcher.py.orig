@@ -15,10 +15,10 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
     Watches a dir for any changes within that dir for any
     file system event (create, delete, rename, move etc...)
     and takes appropriate action.
-
+    
     parameters
         complete_sync: boolean
-            When True, files deleted in the local
+            When True, files deleted in the local 
             folder will also be deleted in the remote folder.
             When False, files deleted in the local
             folder will be retained in the remote folder.
@@ -40,7 +40,7 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
     def on_created(self, event):
         """
         Called when a file or dir is created.
-
+        
         NOTE: If a dir is created in the dir being monitored, there is no
         need to take any action for it.
 
@@ -55,7 +55,7 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
     def on_deleted(self, event):
         """
         Called when a file or dir is deleted.
-
+        
         NOTE: It will only delete the files present on the remote dir
         which are not present in the local dir only if complete-sync
         is set to True.
