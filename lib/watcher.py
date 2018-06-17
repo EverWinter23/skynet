@@ -15,18 +15,18 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
     Watches a dir for any changes within that dir for any
     file system event (create, delete, rename, move etc...)
     and takes appropriate action.
-
+    
     parameters
         complete_sync: boolean
-            when True, files deleted in the local folder will
-            also be deleted in the remote folder.
-            when False, files deleted in the local folder will
-            be retained in the remote folder.
+            When True, files deleted in the local 
+            folder will also be deleted in the remote folder.
+            When False, files deleted in the local
+            folder will be retained in the remote folder.
 
     attributes
-        _q: Instance of FIFOSQLiteQueue class to store actions
-            onto the disk using SQLiteDB for recoverability and
-            fault tolerance.
+        _q: Instance of FIFOSQLiteQueue class to
+            store actions onto the disk using SQLiteDB
+            for recoverability and fault tolerance.
     """
 
     def __init__(self, complete_sync=False, **kwargs):
@@ -40,11 +40,12 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
     def on_created(self, event):
         """
         Called when a file or dir is created.
-        NOTE:
-            If a dir is created in the dir being monitored, there is no
-            need to take any action for it.
-            It will automatically be created on the remote SFTP server
-            if it contains any file.
+        
+        NOTE: If a dir is created in the dir being monitored, there is no
+        need to take any action for it.
+
+        It will automatically be created on the remote SFTP server
+        if it contains any file.
         """
 
         if not isinstance(event, DirCreatedEvent):
@@ -54,10 +55,10 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
     def on_deleted(self, event):
         """
         Called when a file or dir is deleted.
-        NOTE:
-            It will only delete the files present on the remote dir
-            which are not present in the local dir only if complete-sync
-            is set to True.
+        
+        NOTE: It will only delete the files present on the remote dir
+        which are not present in the local dir only if complete-sync
+        is set to True.
         """
 
         if self.complete_sync:
@@ -67,23 +68,22 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
     def on_modified(self, event):
         """
         Called when a file or dir is modified.
-        NOTE:
-            The mtime (modification time) of the directory changes
-            only when a file or a subdirectory is added, removed or
-            renamed.
 
-            Modifying the contents of a file within the directory
-            does not change the directory itself, nor does updating
-            the modified times of a file or a subdirectory.
+        NOTE: The mtime (modification time) of the directory
+        changes only when a file or a subdirectory is added,
+        removed or renamed.
 
-            Thus, if a dir is modified , no action will be taken.
-            However, if a file is modified, we will send a the whole
-            file, which will be overwritten in the remote dir.
+        Modifying the contents of a file within the directory
+        does not change the directory itself, nor does updating
+        the mtime of a file or a subdirectory.
 
-            Sending the whole file is a viable option, because:
-                1. Images have small sizes.
-                2. Videos will not be modified - processing will be done
-                by the processing team.
+        Thus, if a dir is modified , no action will be taken.
+        However, if a file is modified, we will send a the whole
+        file, which will be overwritten in the remote dir.
+
+        Sending the whole file is a viable option, because:
+            1. Images have small sizes.
+            2. Videos will not be modified.
         """
 
         if not isinstance(event, DirModifiedEvent):
