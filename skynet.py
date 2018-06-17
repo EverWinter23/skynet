@@ -123,7 +123,7 @@ class SkyNet:
                 self._thread_handler_ = Handler(mapper=self.mapper)
                 # init handler --to execute actions recorded by the watcher
                 self.logger.info('_thread_handler_ obtaining new connection.')
-                self._thread_handler_.schedule(sftpcon=self.sftpcon)
+                self._thread_handler_._schedule(con=self.sftpcon)
                 self.logger.info('Actions for handler have been shceduled.')
 
                 # try-catch seems redundant
