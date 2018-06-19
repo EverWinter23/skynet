@@ -98,3 +98,27 @@
 + After the connection is lost, the daemon keeps on trying to re-establish the conn and
   is also able to resume from the state the during which the action was halted.
 + To further extend skynet, will start working on incorporating it with cloud storage services.
+
+## 12th-13th June 2018
++ Leave of absence
+
+## Thursday 14th June 2018
++ Started working on cloud integration.
++ Separated skynet from the underlying architecture, by making handler.py and sftpcon.py
+  modules abstract, so that cloud services can be integrated easily.
+
+## Friday 15th June 2018
++ started working on aws-s3 handler module.
++ started working on aws-s3 connection module.
+
+## Monday 18th June 2018
++ Started working on syncing files already present in the folder, when the process is
+  executed of the first time.
++ aws --uploaded a directory to a bucket
++ aws --downloaded a file from the same bucket
+
+## Tuesday 19th June 2018
++ Now, when the module is executed for the very first time, it syncs the files already
+  present in that folder.
++ Working on optimizing the Q, so that multiple actions corresponding to the same file
+  are not recorded multiple times.
