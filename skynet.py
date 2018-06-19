@@ -12,7 +12,10 @@ from threading import Thread
 from lib.sftpcon import SFTPCon
 from lib.watcher import Watcher
 from lib.handler import Handler
+from lib.syncsnap import SyncSnap
 from datetime import datetime
+from pathlib import Path
+from watchdog.utils.dirsnapshot import DirectorySnapshot
 
 # string literals for convenience --DO NOT REMOVE
 SERVER = 'SERVER'
@@ -29,21 +32,21 @@ class SkyNet:
             sets the logging level of the logger, logging
             messages which are less severe than level will
             be ignored.
-        
+
         db_path: str
             path to the database where actions are
             stored.
     """
 
-    def __init__(self, config_path, logging_lvl, db_path):
+    def __init__(self, config, logging_lvl, db_path):
 
         # setup logging
         self.logger = log.get_logger(log.lvl_mapping[logging_lvl])
 
         # get the configuration from the config file
         self.config = ConfigParser(allow_no_value=True)
-        self.config.read(config_file)
-        self.logger.info('Parsed the config_file->{}'.format(config_file))
+        self.config.read(config)
+        self.logger.info('Parsed the config_file->{}'.format(config))
 
         # static configuration --the mappings will not change
         self.logger.info('Init. Mapper.')
@@ -51,14 +54,17 @@ class SkyNet:
         self.logger.info('Initialized Mapper.')
 
         # TODO: explain first run
+        self.db_path = db_path
+        self.syncsnap = SyncSnap(dir_path=self.mapper.local_base)
 
-        if self._first_run(db_path) is True:
-            logger.info('First Run')
+        if self._first_run() is not True:
+            self.logger.info('===============First Run==============')
+            self.syncsnap._first_sync(db_path)
 
         # watcher will notify us of any file system events
         self.logger.info('Init. Watcher.')
-        self.watcher = self._get_watcher(db_path)
-        self.logger.info('Initialized Mapper.')
+        self.watcher = self._get_watcher()
+        self.logger.info('Initialized Watcher.')
 
         # observer to monitor the directory --and notify watcher
         self.logger.info('Init. Observer thread.')
@@ -100,13 +106,13 @@ class SkyNet:
         # start the daemon
         self.logger.info('Daemon started.')
         self._start_execution()
-    
-    def _first_run(self, db_path):
+
+    def _first_run(self):
         """
         Returns true if skynet is running for the first time.
         """
-        return Path(DB_PATH).exists()
-    
+        return Path(self.db_path).exists()
+
     def _stop_execution(self):
         """
         TODO: Add desc
@@ -135,7 +141,8 @@ class SkyNet:
                 # dynamic configuration --guard against conn drop, re-estd conn
                 self.sftpcon = self._get_connection()
 
-                self._thread_handler_ = Handler(mapper=self.mapper)
+                self._thread_handler_ = Handler(mapper=self.mapper,
+                                                db_path=self.db_path)
                 # init handler --to execute actions recorded by the watcher
                 self.logger.info('_thread_handler_ obtaining new connection.')
                 self._thread_handler_._schedule(con=self.sftpcon)
@@ -184,7 +191,7 @@ class SkyNet:
                 self.logger.info('_get_con got up->{}'.format(datetime.now()))
                 continue
 
-    def _get_watcher(self, db_path):
+    def _get_watcher(self):
         """
         TODO: Add desc
         """
@@ -197,7 +204,7 @@ class SkyNet:
         ignore_patterns = list(self.config[SYNC]['ignore_patterns'].split(' '))
         return Watcher(complete_sync=self.config[SYNC]['complete_sync'],
                        ignore_patterns=ignore_patterns,
-                       db_path=db_path)
+                       db_path=self.db_path)
 
     def _get_mapper(self):
         """

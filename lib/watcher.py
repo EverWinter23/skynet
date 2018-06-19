@@ -22,7 +22,7 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
             folder will also be deleted in the remote folder.
             When False, files deleted in the local
             folder will be retained in the remote folder.
-        
+
         db_path: str
             path to the database where actions are
             stored.
@@ -33,7 +33,7 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
             for recoverability and fault tolerance.
     """
 
-    def __init__(self, complete_sync=False, db_path, **kwargs):
+    def __init__(self,  db_path, complete_sync=False, **kwargs):
         super(Watcher, self).__init__(**kwargs)
         logging.info("Night gathers, and now my watch begins.")
 

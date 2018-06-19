@@ -15,32 +15,36 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
     Watches a dir for any changes within that dir for any
     file system event (create, delete, rename, move etc...)
     and takes appropriate action.
-    
+
     parameters
         complete_sync: boolean
-            When True, files deleted in the local 
+            When True, files deleted in the local
             folder will also be deleted in the remote folder.
             When False, files deleted in the local
             folder will be retained in the remote folder.
+        
+        db_path: str
+            path to the database where actions are
+            stored.
 
     attributes
-        _q: Instance of FIFOSQLiteQueue class to
+        _q: instance of FIFOSQLiteQueue class to
             store actions onto the disk using SQLiteDB
             for recoverability and fault tolerance.
     """
 
-    def __init__(self, complete_sync=False, **kwargs):
+    def __init__(self,  db_path, complete_sync=False, **kwargs):
         super(Watcher, self).__init__(**kwargs)
         logging.info("Night gathers, and now my watch begins.")
 
         self.complete_sync = complete_sync
         # TODO: Path for database
-        self._q = Q(path='skynet_db', auto_commit=True, multithreading=True)
+        self._q = Q(path=db_path, auto_commit=True, multithreading=True)
 
     def on_created(self, event):
         """
         Called when a file or dir is created.
-        
+
         NOTE: If a dir is created in the dir being monitored, there is no
         need to take any action for it.
 
@@ -55,7 +59,7 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
     def on_deleted(self, event):
         """
         Called when a file or dir is deleted.
-        
+
         NOTE: It will only delete the files present on the remote dir
         which are not present in the local dir only if complete-sync
         is set to True.

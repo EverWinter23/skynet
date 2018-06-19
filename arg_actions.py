@@ -26,7 +26,6 @@ DB_PATH = os.path.join(DIR_PATH, SKYNET_DB)
 FILE_PATH = os.path.join(DIR_PATH, CONFIG_FILE)
 
 
-
 def _get_config():
     """
     Returns the path of the config file.
@@ -47,6 +46,7 @@ def _load_config(file_path):
     """
     global FILE_PATH
     FILE_PATH = file_path
+
 
 def _db_path():
     """

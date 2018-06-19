@@ -149,6 +149,10 @@ class Handler(Thread):
                 logging.error('ERROR: {}'.format(error))
                 logging.info('Continuing gracefully.')
 
+            except IsADirectoryError as error:
+                logging.error('ERROR: {}'.format(error))
+                logging.info('Continuing gracefully.')
+
             except Exception as error:
                 # mostly connection errors
                 logging.error('ERROR: {}'.format(error))
