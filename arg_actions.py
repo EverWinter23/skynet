@@ -17,11 +17,14 @@ HOME = str(Path.home())
 # TODO: for now, later will change the dir path
 DIR_PATH = os.path.join(HOME, SKYNET)
 
+# database path
+SKYNET_DB = 'skynet_db'
+DB_PATH = os.path.join(DIR_PATH, SKYNET_DB)
+
 # path for config file
 # should work for both windows as well as linux, hopefully ;-)
 FILE_PATH = os.path.join(DIR_PATH, CONFIG_FILE)
 
-# TODO: Remove port -> port forwarding --ANDROID YES
 
 
 def _get_config():
@@ -44,6 +47,12 @@ def _load_config(file_path):
     """
     global FILE_PATH
     FILE_PATH = file_path
+
+def _db_path():
+    """
+    Returns the path of the database.
+    """
+    return DB_PATH
 
 
 def _config():
