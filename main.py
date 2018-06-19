@@ -38,7 +38,8 @@ def main():
         arg_actions._load_config(args.config_file)
 
     skynet = SkyNet(config_file=arg_actions._get_config(),
-                    logging_lvl=args.logging)
+                    logging_lvl=args.logging,
+                    db_path=arg_actions.DB_PATH)
 
     try:
         while True:
