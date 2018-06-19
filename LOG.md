@@ -137,7 +137,8 @@ in the local dir.
 
 **Resource Moved**
 
-If a resource (file/dir) is moved inside the local dir which is being monitored, we simply mimic the move on the remote SFTP server.
+If a resource (file/dir) is moved inside the local dir which is being monitored, we 
+simply mimic the move on the remote SFTP server.
 
 NOTE: But frist we'll make sure that the path leading up to the new destination
 of the file, exists, --we'll create parent dirs as needed.
@@ -188,11 +189,25 @@ corresponding file system event.
 Whilst, the handler.py module checks the Q for any pending actions --which have not
 been executed yet. 
 
-# BUGS
+## Optimizing the Q
+
+As things stand right now, the Q records multiple actions when a single large file
+is copied or moved into the dir being monitored/synced, which is redundant, because
+we only want one action corresponding to each event.
+
+**[NOT IMPLEMENTED YET]** watchdog.observers.api.EventQueue is a thread-safe event 
+queue based on a special queue that skips adding the same event (FileSystemEvent) 
+multiple times consecutively. Thus avoiding dispatching multiple event handling calls
+when multiple identical events are produced quicker than an observer can consume them.
+
+Will have to switch from persistQ to this EventQueue, but backing up onto the disk
+is a raodblock, rightnow.
+
+## Bugs
 
 All the known bugs have been listed below, with their status.
 
-### BUG #1 [RESOLVED]
+### Bug #1 [RESOLVED]
 
 How to handle actions which ran into error during their execution?
 
@@ -223,7 +238,7 @@ makes sure that the actions are executed inorder.
 
 NOTE: handler.py and watcher.py run independent of each other, --as threads.
 
-### BUG #2 [RESOLVED]
+### Bug #2 [RESOLVED]
 
 This bug arises when an action is unable to complete due to some error during its
 execution. The way that handler.py handles unsuccessfull actions right now, is that
