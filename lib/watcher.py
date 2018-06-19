@@ -22,20 +22,24 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
             folder will also be deleted in the remote folder.
             When False, files deleted in the local
             folder will be retained in the remote folder.
+        
+        db_path: str
+            path to the database where actions are
+            stored.
 
     attributes
-        _q: Instance of FIFOSQLiteQueue class to
+        _q: instance of FIFOSQLiteQueue class to
             store actions onto the disk using SQLiteDB
             for recoverability and fault tolerance.
     """
 
-    def __init__(self, complete_sync=False, **kwargs):
+    def __init__(self, complete_sync=False, db_path, **kwargs):
         super(Watcher, self).__init__(**kwargs)
         logging.info("Night gathers, and now my watch begins.")
 
         self.complete_sync = complete_sync
         # TODO: Path for database
-        self._q = Q(path='skynet_db', auto_commit=True, multithreading=True)
+        self._q = Q(path=db_path, auto_commit=True, multithreading=True)
 
     def on_created(self, event):
         """

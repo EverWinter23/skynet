@@ -22,15 +22,20 @@ SYNC = 'SYNC'
 class SkyNet:
     """
     parameters
-        config_file: str
+        config_path: str
             path to the config file
 
         logging_lvl: str
-            sets the logging level of the logger, logging messages
-            which are less severe than level will be ignored.
+            sets the logging level of the logger, logging
+            messages which are less severe than level will
+            be ignored.
+        
+        db_path: str
+            path to the database where actions are
+            stored.
     """
 
-    def __init__(self, config_file, logging_lvl):
+    def __init__(self, config_path, logging_lvl, db_path):
 
         # setup logging
         self.logger = log.get_logger(log.lvl_mapping[logging_lvl])
@@ -45,9 +50,14 @@ class SkyNet:
         self.mapper = self._get_mapper()
         self.logger.info('Initialized Mapper.')
 
+        # TODO: explain first run
+
+        if self._first_run(db_path) is True:
+            logger.info('First Run')
+
         # watcher will notify us of any file system events
         self.logger.info('Init. Watcher.')
-        self.watcher = self._get_watcher()
+        self.watcher = self._get_watcher(db_path)
         self.logger.info('Initialized Mapper.')
 
         # observer to monitor the directory --and notify watcher
@@ -83,14 +93,20 @@ class SkyNet:
         self.handler = Handler(mapper=self.mapper)
         self._thread_handler_ = Thread(target=self.handler.run)
         '''
-        self._thread_handler_ = Handler(mapper=self.mapper)
+        self._thread_handler_ = Handler(mapper=self.mapper, db_path=db_path)
 
         # the ssh connection
         self.sftpcon = None
         # start the daemon
         self.logger.info('Daemon started.')
         self._start_execution()
-
+    
+    def _first_run(self, db_path):
+        """
+        Returns true if skynet is running for the first time.
+        """
+        return Path(DB_PATH).exists()
+    
     def _stop_execution(self):
         """
         TODO: Add desc
@@ -112,7 +128,6 @@ class SkyNet:
         """
         TODO: Add desc
         """
-
         # while conn exists
         # TODO: Add control flow desc --also we're looping too much
         while True:
@@ -169,7 +184,7 @@ class SkyNet:
                 self.logger.info('_get_con got up->{}'.format(datetime.now()))
                 continue
 
-    def _get_watcher(self):
+    def _get_watcher(self, db_path):
         """
         TODO: Add desc
         """
@@ -181,7 +196,8 @@ class SkyNet:
 
         ignore_patterns = list(self.config[SYNC]['ignore_patterns'].split(' '))
         return Watcher(complete_sync=self.config[SYNC]['complete_sync'],
-                       ignore_patterns=ignore_patterns)
+                       ignore_patterns=ignore_patterns,
+                       db_path=db_path)
 
     def _get_mapper(self):
         """

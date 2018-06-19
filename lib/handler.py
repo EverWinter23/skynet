@@ -24,19 +24,23 @@ class Handler(Thread):
 
     parameters
         mapper: Mapper
-            An instance of Mapper class to map local files
+            an instance of Mapper class to map local files
             to their respective paths on the SFTP server.
+
+        db_path: str
+            path to the database where actions are
+            stored.
 
     attributes
         _is_running: boolean
-            Indicates the current status of the thread
+            indicates the current status of the thread
 
         _q: FFIOSQLiteQueue
-            Retrieves actions stored by the wathcer in the
+            retrieves actions stored by the wathcer in the
             Q and executes them when the connection exists.
     """
 
-    def __init__(self, mapper):
+    def __init__(self, mapper, db_path):
         Thread.__init__(self)
         self._is_running = False
         self.mapper = mapper
@@ -44,7 +48,7 @@ class Handler(Thread):
         #   auto_commit = False in this declaration, this ensures that
         #   when we deQ something from the Q, the change is not committed
         #   until and unless the action is completed.
-        self._q = Q(path='skynet_db', auto_commit=False, multithreading=True)
+        self._q = Q(path=db_path, auto_commit=False, multithreading=True)
 
     def _schedule(self, con):
         """
