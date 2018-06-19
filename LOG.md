@@ -189,13 +189,15 @@ corresponding file system event.
 Whilst, the handler.py module checks the Q for any pending actions --which have not
 been executed yet. 
 
-## Optimizing the Q
+# OPTIMIZATIONS
+
+## Optimizing the Q [NOT DONE YET]
 
 As things stand right now, the Q records multiple actions when a single large file
 is copied or moved into the dir being monitored/synced, which is redundant, because
 we only want one action corresponding to each event.
 
-**[NOT IMPLEMENTED YET]** watchdog.observers.api.EventQueue is a thread-safe event 
+**watchdog.observers.api.EventQueue** is a thread-safe event 
 queue based on a special queue that skips adding the same event (FileSystemEvent) 
 multiple times consecutively. Thus avoiding dispatching multiple event handling calls
 when multiple identical events are produced quicker than an observer can consume them.
@@ -203,8 +205,30 @@ when multiple identical events are produced quicker than an observer can consume
 Will have to switch from persistQ to this EventQueue, but backing up onto the disk
 is a raodblock, rightnow.
 
-## Bugs
+## Squashing actions [NOT DONE YET]
 
+We could really benefit from squashing the actions corresponding to a file into the
+most recent one, --here we only execute one action for that file, which might have
+multiple actions recorded in the Q.
+
+    Consider the scenario in which multiple actions correspond to the same file, 
+    and we do not have an internet connection rendering us unable to execute the
+    instructions which have been stored in the Q.
+
+    handler.py Q-> [delete][move][modify][modify][modify][modify][create]
+                   ^--This is the HEAD, i.e, the most recent action performed on
+                   this file.
+    However, watcher records all action, since the creation of that file, making
+    all the actions corresponding to each event useless, because ultimately the
+    file will be deleted.
+
+We could use dir snapshots --something like storing the folder structure on the disk,
+or file, and compare it with the previous snapshot and accordingly enQ instructions
+in the Q based on files that were created, modified, deleted during the time when
+either the process was not exectuing or the internet conn could not be established. 
+
+
+# BUGS
 All the known bugs have been listed below, with their status.
 
 ### Bug #1 [RESOLVED]
