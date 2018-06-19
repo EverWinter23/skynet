@@ -79,7 +79,7 @@ Let alphabets represent a directory, then we can represent the paths as:
 
 Detailed setup for SSH keys will be provided later.
 
-## Monitoring the local dir for changes
+## Monitoring the local dir for changes --wathcer.py
 
 watcher.py module Watches a dir for any changes within that dir for any file 
 system event (create, delete, rename, move etc...) and takes appropriate action.
@@ -93,7 +93,7 @@ calls to event handlers to take appropriate action.
 **Handler** Handles the actual execution of the action taken by ovveriding
 methods.
 
-## Handling the file system events
+## Handling the file system events --handler.py
 
 **Directory Modification**
 
@@ -143,7 +143,7 @@ simply mimic the move on the remote SFTP server.
 NOTE: But frist we'll make sure that the path leading up to the new destination
 of the file, exists, --we'll create parent dirs as needed.
 
-## Syncing local dir with remote dir
+## Syncing local dir with remote dir --skynet.py
 
 The following is a list of things that need to be done to done, to set-up complete
 syncing.
@@ -188,6 +188,27 @@ corresponding file system event.
 
 Whilst, the handler.py module checks the Q for any pending actions --which have not
 been executed yet. 
+
+## Syncing files already present in a folder mapping --syncsnap.py
+
+Prior to this commit->(syncsnap.py: Sync folders based on dir snapshots), skynet did
+not have this feature. Now, the resources already present in the dir to be monitored
+are also synced to the remote folder, when the main module is executed for the very
+first time.
+
+The syncsnap.py module will aslo help in making the main module independent of the
+watcher, i.e. we would not need to rely on the watcher to watch for file system 
+events.
+
+However, we would still want to use the watcher because is we were to totally rely
+on syncsnap.py, we would need to implement polling, or periodic syncing, which defeats
+the syncing the purpose.
+So the best way to approach this would be to combine the best features of both, using
+syncsnap.py when the connection is not present and using the watcher or faster event
+dispatch when we do have an internet connection for direct monitoring--although we will
+be using the Q, even when we use the watcher. But the main roadblock in implementing
+this is backing up the snapshot to the disk. Pickling maybe??
+
 
 # OPTIMIZATIONS
 
