@@ -5,9 +5,7 @@ thursday 7th june 2018
 import time
 import sys
 import arg_actions
-import logging
 from skynet import SkyNet
-from pathlib import Path
 from lib.parser import Parser
 
 
