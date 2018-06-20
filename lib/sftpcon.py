@@ -97,7 +97,7 @@ class SFTPCon:
         """
         # NOTE: Very dangerous cmd, can delete everything inside a dir
         #       Use with CAUTION!
-        # cmd = 'rm -rf "' + remote_path + '"'
+        cmd = 'rm -rf "' + remote_path + '"'
         self._con.execute(cmd)
 
     def _move(self, remote_src_path, remote_dest_path):
