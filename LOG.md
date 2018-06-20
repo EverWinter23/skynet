@@ -209,6 +209,47 @@ dispatch when we do have an internet connection for direct monitoring--although 
 be using the Q, even when we use the watcher. But the main roadblock in implementing
 this is backing up the snapshot to the disk. Pickling maybe??
 
+## Working with aws-s3 --awscon.py
+
+The library for uploading and downloading will be [boto3](https://github.com/boto/boto3),
+which allows you to write scripts which make use of Amazon-S3's services.
+
+
+Next, set up credentials (in e.g. ~/.aws/credentials):
+
+    [default]
+    aws_access_key_id = YOUR_KEY
+    aws_secret_access_key = YOUR_SECRET
+
+Then, set up a default region (in e.g. ~/.aws/config):
+
+    [default]
+    region=us-east-1
+    
+Let's start by listing the bucket names that you can access.
+
+    import boto3
+    s3 = boto3.resource('s3')
+    # Let's get our bucket
+    SKYNET_23 = [bucket.name for bucket in s3.buckets.all()][0]
+    SKYNET_23
+
+### Uploading files and preserving the dir structure
+This creates a folder named 'hello' with bucket.txt and c.txt as it contents. Kind of like a folder.
+
+    data = open('bucket.txt', 'rb')
+    s3.Bucket(SKYNET_23).put_object(Key='hello/bucket.txt', Body=data)
+    data = open('c.txt', 'rb')
+    s3.Bucket(SKYNET_23).put_object(Key='hello/c.txt', Body=data)
+
+### Downloading a dir with the dir structure
+Lists all files/folders within the folder name 'hello'. If you can list them, you can
+pretty much figure out the way to download them. Half the part is knowing what to
+download.
+
+    bucket = s3.Bucket(SKYNET_23)
+    for obj in bucket.objects.filter(Prefix='hello'):
+    print('{0}:{1}'.format(bucket.name, obj.key))
 
 # OPTIMIZATIONS
 
