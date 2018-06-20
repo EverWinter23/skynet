@@ -4,7 +4,6 @@
 
 import logging
 from persistqueue import FIFOSQLiteQueue as Q
-from watchdog.observers import Observer
 from watchdog.events import PatternMatchingEventHandler
 from watchdog.events import DirCreatedEvent
 from watchdog.events import DirModifiedEvent
