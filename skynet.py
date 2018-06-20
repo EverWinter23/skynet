@@ -8,14 +8,13 @@ import lib.logger as log
 from configparser import ConfigParser
 from watchdog.observers import Observer
 from lib.mapper import Mapper
-from threading import Thread
 from lib.sftpcon import SFTPCon
 from lib.watcher import Watcher
 from lib.handler import Handler
 from lib.syncsnap import SyncSnap
 from datetime import datetime
 from pathlib import Path
-from watchdog.utils.dirsnapshot import DirectorySnapshot
+# from watchdog.utils.dirsnapshot import DirectorySnapshot
 
 # string literals for convenience --DO NOT REMOVE
 SERVER = 'SERVER'
@@ -95,10 +94,6 @@ class SkyNet:
             sys.exit()
 
         # also need a handler to handle the actual transfers
-        '''
-        self.handler = Handler(mapper=self.mapper)
-        self._thread_handler_ = Thread(target=self.handler.run)
-        '''
         self._thread_handler_ = Handler(mapper=self.mapper, db_path=db_path)
 
         # the ssh connection
