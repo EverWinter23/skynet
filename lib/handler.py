@@ -132,7 +132,7 @@ class Handler(Thread):
                 logging.info("Commited change to the DB.")
 
             except FileNotFoundError as error:
-                """
+                '''
                 NOTE:  Need for auto_commit to be False
                     This was what I was doing previously->which can lead to
                     an unforseen error.
@@ -144,7 +144,7 @@ class Handler(Thread):
                     we'll add it to the queue so that it may be re-executed
                     again. This ensures that change is reflected in the remote
                     dir and not lost due to an error in connectivity.
-                """
+                '''
                 # self._q.put(entry)
                 logging.error('ERROR: {}'.format(error))
                 logging.info('Continuing gracefully.')
