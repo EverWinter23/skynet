@@ -88,12 +88,7 @@ class Mapper:
 
 
 def main():
-    local_root = '/home/frost'
-    local_dir = 'Code/tech-crunch'
-    # since it's a local host -> won't begin with '/'
-    remote_root = 'localhost'
-    remote_dir = 'Documents'
-    mapper = Mapper(local_root, local_dir, remote_root, remote_dir)
+    pass
 
 
 # test module
