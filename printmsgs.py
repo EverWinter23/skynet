@@ -17,7 +17,7 @@ NOTE: If you have made any mistake during the configuration,
       use the cli to generate a new one for you."""
 
 sftp_config_msg = """
-# ================= Sever Configuration =================
+# ================== SFTP Configuration ==================
 """
 host_msg = """# Hostname or IP address of the remote server."""
 
@@ -49,9 +49,8 @@ region_msg = """
 # https://s3.console.aws.amazon.com/s3/home?region=us-east-1
 #                                                  ^^^^^^^^^"""
 
-
 sync_msg = """
-# ================= Sync Configuration ================='
+# ================= SYNC Configuration ================='
 # Trailing slashes are optional.
 # The local path specified here should be relative to the top lvl dir.
 # Please see LOG.md for further details on configuration settings."""
@@ -74,9 +73,8 @@ remote_root_msg = """
 # Should start with leading slashes.
 # Should use UNIX-style forward slashes, since the remote
 # storage will be accessed using UNIX like paths.
-# NOTE: Don't get confused for s3, just specify the path of dir
-#       to which you want to sync your stuff.
-#       Example-> BUCKET_NAME/Work/Stuff [Syncs local dir to 'Stuff']"""
+# INFO: Having a problem, go see LOG.md --mapping section, it'll
+#       definitely clear any doubts you have about relative mapping."""
 
 ignore_msg = """
 # Files matching these patterns will be not be uploaded to the server.
