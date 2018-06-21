@@ -184,15 +184,15 @@ def _sftp_config():
     #       Key: None
     #   are their to write the comments to the configuration file.
     #   Just makes the conifg while easier to edit.
-    config['SERVER'] = {sftp_config_msg: None,
-                        host_msg: None,
-                        'remote_host': remote_host,
-                        uid_msg: None,
-                        'remote_username': remote_username,
-                        port_msg: None,
-                        'remote_port': remote_port,
-                        passwd_msg: None,
-                        'remote_password': remote_password}
+    config['SFTP'] = {sftp_config_msg: None,
+                      host_msg: None,
+                      'remote_host': remote_host,
+                      uid_msg: None,
+                      'remote_username': remote_username,
+                      port_msg: None,
+                      'remote_port': remote_port,
+                      passwd_msg: None,
+                      'remote_password': remote_password}
 
     with open(FILE_PATH, 'w') as config_file:
         config.write(config_file)
