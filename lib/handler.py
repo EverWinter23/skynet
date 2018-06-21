@@ -49,6 +49,7 @@ class Handler(Thread):
         #   when we deQ something from the Q, the change is not committed
         #   until and unless the action is completed.
         self._q = Q(path=db_path, auto_commit=False, multithreading=True)
+        self.con = None
 
     def _schedule(self, con):
         """
