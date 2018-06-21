@@ -7,7 +7,7 @@ from persistqueue import FIFOSQLiteQueue as Q
 from watchdog.events import PatternMatchingEventHandler
 from watchdog.events import DirCreatedEvent
 from watchdog.events import DirModifiedEvent
-
+from watchdog.events import DirMovedEvent
 
 class Watcher(PatternMatchingEventHandler):  # watcher on the wall
     """
@@ -98,7 +98,8 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
         Called when a file or dir is renamed or moved.
         """
 
-        logging.info("Recorded move: \'{}\'->\'{}\'".format(
-            event.src_path, event.dest_path))
-        self._q.put({'action': 'move', 'src_path': event.src_path,
-                     'dest_path': event.dest_path})
+        if not isinstance(event, DirMovedEvent):
+            logging.info("Recorded move: \'{}\'->\'{}\'".format(
+                event.src_path, event.dest_path))
+            self._q.put({'action': 'move', 'src_path': event.src_path,
+                        'dest_path': event.dest_path})
