@@ -47,15 +47,15 @@ def main():
     if args.config:
         arg_actions._config(args.config)
         # exit after configuration
-        sys.exit('{} v{} is ready to run.'.fohas been configuredrmat(
+        sys.exit('{} v{} is ready to run.'.format(
             arg_actions.SKYNET, arg_actions.VERSION))
 
     if args.config_file:
         logger.info('Loading the specified config.')
         arg_actions._load_config(args.config_file)
 
-    '''
     skynet = SkyNet(config=arg_actions._get_config(),
+                    service=args.run_with,
                     db_path=arg_actions.DB_PATH)
 
     try:
@@ -63,7 +63,6 @@ def main():
             time.sleep(1)
     except KeyboardInterrupt:
         skynet._stop_execution()
-    '''
 
 
 if __name__ == '__main__':
