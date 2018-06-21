@@ -2,7 +2,8 @@
 20th june 2018 wednesday
 '''
 
-import boto3
+from boto3 import client
+from boto3 import resource
 import os
 import logging
 
@@ -43,12 +44,14 @@ class S3Con:
                 mapped path of the src_path on the
                 remote storage
         """
+        logging.info('SEND TO =============={}'.format(remote_path))
+        
         with open(src_path, 'rb') as data:
-            self.upload_fileobj(data, key=src_path)
-
-        self._client.put_object(Fileobj=src_path,
-                                Bucket=self._bucket_name,
-                                Key=remote_path)
+            self._client.upload_fileobj(Fileobj=data,
+                                        Bucket=self._bucket_name,
+                                        Key=remote_path)
+        
+        
 
     def _delete(self, remote_path):
         """
@@ -69,8 +72,13 @@ class S3Con:
         for obj in self._bucket.objects.filter(Prefix=prefix):
             objects_to_delete.append({'Key': obj.key})
 
+        if not objects_to_delete:
+            return
+
+        logging.info("To delete {}".format(objects_to_delete))
         self._bucket.delete_objects(Delete={
                                     'Objects': objects_to_delete})
+        
 
     def _move(self, remote_src_path, remote_dest_path):
         """
@@ -87,24 +95,19 @@ class S3Con:
         # objects to with new key to the bucket and then
         # delete all objects with the prefix that were moved.
         # Even more complex when folders are involved.
-        old_prefix = remote_src_path
-        new_prefix = remote_dest_path
-        objects_to_move = []
+        old_key = remote_src_path
+        new_key = remote_dest_path
+        logging.info("To move {}".format(old_key))
 
-        for obj in self._bucket.objects.filter(Prefix=prefix):
-            objects_to_move.append({'Key': obj.key})
-
-        for obj in objects_to_move:
-            new_key = os.path.join(new_prefix, obj.key.split(old_prefix, 1)[1])
-            logging.info("The new key for the object {} is {}".format(
-                         obj.key, new_key))
-
-            cpy_src = os.path.join(self._bucket_name, obj.key)
-            logging.info("The source loc for copy is {}".format(cpy_src))
-            self.client.copy_object(Bucket=self._bucket_name,
-                                    CopySource=cpy_src,
-                                    Key=new_key)
+        cpy_src = os.path.join(self._bucket_name, old_key)
+        logging.info("The source loc for copy is /'{}/'".format(cpy_src))
+        
+        self._client.copy_object(Bucket=self._bucket_name,
+                                CopySource=cpy_src,
+                                Key=new_key)
+        
             # also note that object to move is also the object to be
             # deleted, so we'll just delete that object over here
-            logging.info("Deleting object with key: {}".format(obj.key))
-            self._bucket.delete_objects(Delete={'Objects': obj})
+        
+        self._client.delete_object(Bucket=self._bucket_name,
+                                   Key=old_key)
