@@ -119,6 +119,12 @@
 
 ## Tuesday 19th June 2018
 + Now, when the module is executed for the very first time, it syncs the files already
-  present in that folder.
+  present in that folder --syncsnap.py.
 + Working on optimizing the Q, so that multiple actions corresponding to the same file
   are not recorded multiple times.
++ Went on a field trip and got to see how drones collected data.
+
+  ## Wendnesday 20th June 2018
+  + Finished s3con.py --handles connection and ops like move, delete, send to s3-bucket.
+  + Started working on a cli for configurin s3-bucket service.
+  + Attended weekly programming feedback session. 
