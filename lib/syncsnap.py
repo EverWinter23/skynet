@@ -4,16 +4,16 @@
 
 import logging
 from watchdog.utils.dirsnapshot import DirectorySnapshot
-from persistqueue import FIFOSQLiteQueue as Q
+from persistqueue import UniqueQ as Q
 
 
 class SyncSnap():
     """
     TODO
     attributes
-    _q: FFIOSQLiteQueue
-            retrieves actions stored by the wathcer in the
-            Q and executes them when the connection exists.
+    _q: UniqueQ
+        retrieves actions stored by the wathcer in the
+        Q and executes them when the connection exists.
     """
 
     def __init__(self, dir_path):
