@@ -4,7 +4,7 @@
 
 from threading import Thread
 import logging
-from persistqueue import FIFOSQLiteQueue as Q
+from persistqueue import UniqueQ as Q
 
 
 # NOTE: We will duck the responsibility of handling exceptions, and
@@ -35,7 +35,7 @@ class Handler(Thread):
         _is_running: boolean
             indicates the current status of the thread
 
-        _q: FFIOSQLiteQueue
+        _q: UniqueQ
             retrieves actions stored by the wathcer in the
             Q and executes them when the connection exists.
     """
