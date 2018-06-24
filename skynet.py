@@ -193,7 +193,7 @@ class SkyNet:
                 # must've obtained the connection
                 logging.info('Initialized SFTPCon.')
                 return sftpcon
-
+            
             except Exception as error:
                 logging.error('Cause: {}'.format(error))
                 logging.info('_get_con slept->{}'.format(datetime.now()))

@@ -30,15 +30,19 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
         _q: UniqueQ
             stores actions onto the disk using SQLiteDB
             for recoverability and fault tolerance.
+        
+        _qsize: int
+            size of Q, denotes number of actions enQ'd in
+            the Q.
     """
 
     def __init__(self,  db_path, complete_sync=False, **kwargs):
         super(Watcher, self).__init__(**kwargs)
         logging.info("Night gathers, and now my watch begins.")
 
-        self.complete_sync = complete_sync
-        # TODO: Path for database
+        self._complete_sync = complete_sync
         self._q = Q(path=db_path, auto_commit=True, multithreading=True)
+        self._qsize = self._q.size
 
     def on_created(self, event):
         """
@@ -52,8 +56,10 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
         """
 
         if not isinstance(event, DirCreatedEvent):
-            logging.info("Recorded creation: {}".format(event.src_path))
             self._q.put({'action': 'send', 'src_path': event.src_path})
+            if self._qsize  + 1 == self._q.size:
+                self._qsize += 1
+                logging.info("Recorded creation: {}".format(event.src_path))
 
     def on_deleted(self, event):
         """
@@ -64,9 +70,11 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
         is set to True.
         """
 
-        if self.complete_sync:
-            logging.info("Recorded deletion: {}".format(event.src_path))
+        if self._complete_sync:
             self._q.put({'action': 'delete', 'src_path': event.src_path})
+            if self._qsize + 1 == self._q.size:
+                self._qsize += 1
+                logging.info("Recorded deletion: {}".format(event.src_path))
 
     def on_modified(self, event):
         """
@@ -90,16 +98,21 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
         """
 
         if not isinstance(event, DirModifiedEvent):
-            logging.info("Recorded modification: {}".format(event.src_path))
             self._q.put({'action': 'send', 'src_path': event.src_path})
-
+            if self._qsize + 1 == self._q.size:
+                self._qsize += 1
+                logging.info("Recorded modification: {}".format(event.src_path))
+        
     def on_moved(self, event):
         """
         Called when a file or dir is renamed or moved.
         """
 
         if not isinstance(event, DirMovedEvent):
-            logging.info("Recorded move: \'{}\'->\'{}\'".format(
-                event.src_path, event.dest_path))
             self._q.put({'action': 'move', 'src_path': event.src_path,
                         'dest_path': event.dest_path})
+            if self._qsize + 1 == self._q.size:
+                self._qsize += 1
+                logging.info("Recorded move: \'{}\'->\'{}\'".format(
+                    event.src_path, event.dest_path))
+            
