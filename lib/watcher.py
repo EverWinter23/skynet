@@ -3,7 +3,7 @@
 '''
 
 import logging
-from persistqueue import FIFOSQLiteQueue as Q
+from persistqueue import UniqueQ as Q
 from watchdog.events import PatternMatchingEventHandler
 from watchdog.events import DirCreatedEvent
 from watchdog.events import DirModifiedEvent
@@ -27,8 +27,8 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
             stored.
 
     attributes
-        _q: instance of FIFOSQLiteQueue class to
-            store actions onto the disk using SQLiteDB
+        _q: UniqueQ
+            stores actions onto the disk using SQLiteDB
             for recoverability and fault tolerance.
     """
 
