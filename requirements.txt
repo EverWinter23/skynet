@@ -1,0 +1,8 @@
+# for aws-s3
+boto3
+# for sftp
+pysftp
+# for monitoring file system events
+watchdog
+# for recoverable, faul-tolerant, disk-based Q
+persist-queue
