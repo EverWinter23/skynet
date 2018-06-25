@@ -1,6 +1,6 @@
 SKYNET
 
-## Setting up SSH server
+## S1. Setting up SSH server
 Before using SFTP protocol, we need to setup the SFTP server using SSH.
 
 **Linux**
@@ -16,7 +16,7 @@ also been added because on android devices the SFTP server runs on port 2222.
 
 Detailed setup for windows will be provided later.
 
-## Establishing connection with remote SFTP server
+## S2. Establishing connection with remote SFTP server
 
 Using the [pysftp](http://pysftp.readthedocs.io/en/release_0.2.9/) library 
 (soft wrapper around paramiko lib) for establishing connection with the SFTP 
@@ -41,7 +41,7 @@ Changes will only be needed to apply to the sftpcon.py module.
         # upload a local file to the SFTP server
         sftp.put('local_file_path')
 
-## The concept of Mapping
+## S3. The concept of Mapping
 
 **Example:** Say, we want to sync the folder x to the folder y on the remote SFTP server.
 
@@ -79,7 +79,7 @@ Let alphabets represent a directory, then we can represent the paths as:
 
 Detailed setup for SSH keys will be provided later.
 
-## Monitoring the local dir for changes --wathcer.py
+## S4. Monitoring the local dir for changes --wathcer.py
 
 watcher.py module Watches a dir for any changes within that dir for any file 
 system event (create, delete, rename, move etc...) and takes appropriate action.
@@ -93,7 +93,7 @@ calls to event handlers to take appropriate action.
 **Handler** Handles the actual execution of the action taken by ovveriding
 methods.
 
-## Handling the file system events --handler.py
+## S5. Handling the file system events --handler.py
 
 **Directory Modification**
 
@@ -143,7 +143,7 @@ simply mimic the move on the remote SFTP server.
 NOTE: But frist we'll make sure that the path leading up to the new destination
 of the file, exists, --we'll create parent dirs as needed.
 
-## Syncing local dir with remote dir --skynet.py
+## S6. Syncing local dir with remote dir --skynet.py
 
 The following is a list of things that need to be done to done, to set-up complete
 syncing.
@@ -165,7 +165,7 @@ syncing.
 **NOTE:** The Q(if implemented) will need to be saved somewhere-> if the local PC was
 to shut down. The Q will also lead to Poducer-Consumer problem which will need to handled.
 
-## Fault tolerant and recoverable syncing
+## S7. Fault tolerant and recoverable syncing
 Will use [persist-queue](https://pypi.org/project/persist-queue/) module as it implements
 a file-based queue, and also achieves the main 3 features we desire:
 
@@ -189,7 +189,7 @@ corresponding file system event.
 Whilst, the handler.py module checks the Q for any pending actions --which have not
 been executed yet. 
 
-## Syncing files already present in a folder mapping --syncsnap.py
+## S8. Syncing files already present in a folder mapping --syncsnap.py
 
 Prior to this commit->(syncsnap.py: Sync folders based on dir snapshots), skynet did
 not have this feature. Now, the resources already present in the dir to be monitored
@@ -209,7 +209,7 @@ dispatch when we do have an internet connection for direct monitoring--although 
 be using the Q, even when we use the watcher. But the main roadblock in implementing
 this is backing up the snapshot to the disk. Pickling maybe??
 
-## Working with aws-s3 --awscon.py
+## S9. Working with aws-s3 --awscon.py
 
 The library for uploading and downloading will be [boto3](https://github.com/boto/boto3),
 which allows you to write scripts which make use of Amazon-S3's services.
@@ -235,7 +235,9 @@ Let's start by listing the bucket names that you can access.
     SKYNET_23
 
 ### Uploading files and preserving the dir structure
-This creates a folder named 'hello' with bucket.txt and c.txt as it contents. Kind of like a folder.
+
+This creates a folder named 'hello' with bucket.txt and c.txt as it contents.Kind of 
+like a folder.
 
     data = open('bucket.txt', 'rb')
     s3.Bucket(SKYNET_23).put_object(Key='hello/bucket.txt', Body=data)
@@ -243,6 +245,7 @@ This creates a folder named 'hello' with bucket.txt and c.txt as it contents. Ki
     s3.Bucket(SKYNET_23).put_object(Key='hello/c.txt', Body=data)
 
 ### Downloading a dir with the dir structure
+
 Lists all files/folders within the folder name 'hello'. If you can list them, you can
 pretty much figure out the way to download them. Half the part is knowing what to
 download.
@@ -251,23 +254,57 @@ download.
     for obj in bucket.objects.filter(Prefix='hello'):
     print('{0}:{1}'.format(bucket.name, obj.key))
 
+## S10. Optimizing the Q [Implements both, O.1 and O.2]
+
+As described in the section O.1, before the solution described below, had been
+implemented, the Q recorded multiple actions corresponding to a single file.
+This resulted in wastage of CPU resources, and needlessly executed the same
+action again and again --corresponding to the same file and thus also wasted
+bandwidth and time.
+
+**persistqueue.UniqueQ** is an SQLite based Q --which provides us with features desc
+in section S7 and also ensures, that no two actions in the Q are exactly alike.
+
+One might woonder, how does this help in squashing actions? FileSystemEvents heavily
+comprise of modifications. During the life-time of a file, most of the events
+corresponding to that file are modifications in b/w creation and deletion. When, we
+think of it like that, we aslo come to realize, every modification in that file,
+corresponds to an action which is similar to all other modification instructions.
+Their key-value pairs --'action':'send' and 'src_path':'../../' are both same and thus,
+will never be enQ'd into the Q.
+
+    Consider the same scenario, which has been described in section O.2,
+    
+    handler.py Q-> [delete][move][modify][modify][modify][modify][create]
+                   ^--This is the HEAD, i.e, the most recent action performed on
+                   this file.
+    Assuming, that the file has been not been moved anywhere b/w its creation
+    and deletion, the watcher will only records atmost 3 actions corresponding
+    to any file, in the Q at any given time. This reduces a lot of redundancy.
+    Can be further optimized, but I don;t think that it would be worth the effort
+    for small files. However, if you're working with large files, than I think
+    you would want to eliminate even the action 'send' already in the Q, should
+    the file be deleted.
+    
+
+
 # OPTIMIZATIONS
 
-## Optimizing the Q [NOT DONE YET]
+## O.1 Optimizing the Q [DONE --see S10]
 
 As things stand right now, the Q records multiple actions when a single large file
 is copied or moved into the dir being monitored/synced, which is redundant, because
 we only want one action corresponding to each event.
 
-**watchdog.observers.api.EventQueue** is a thread-safe event 
-queue based on a special queue that skips adding the same event (FileSystemEvent) 
-multiple times consecutively. Thus avoiding dispatching multiple event handling calls
-when multiple identical events are produced quicker than an observer can consume them.
+**watchdog.observers.api.EventQueue** is a thread-safe event queue based on a special
+queue that skips adding the same event (FileSystemEvent) multiple times consecutively.
+Thus avoiding dispatching multiple event handling calls when multiple identical events 
+are produced quicker than an observer can consume them.
 
 Will have to switch from persistQ to this EventQueue, but backing up onto the disk
 is a raodblock, rightnow.
 
-## Squashing actions [NOT DONE YET]
+## O.2 Squashing actions [DONE]
 
 We could really benefit from squashing the actions corresponding to a file into the
 most recent one, --here we only execute one action for that file, which might have
@@ -277,7 +314,7 @@ multiple actions recorded in the Q.
     and we do not have an internet connection rendering us unable to execute the
     instructions which have been stored in the Q.
 
-    handler.py Q-> [delete][move][modify][modify][modify][modify][create]
+    handler.py Q-> [create][modify][modify]...[modify][modify][delete]
                    ^--This is the HEAD, i.e, the most recent action performed on
                    this file.
     However, watcher records all action, since the creation of that file, making
