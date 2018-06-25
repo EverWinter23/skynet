@@ -284,7 +284,7 @@ will never be enQ'd into the Q.
     Can be further optimized, but I don;t think that it would be worth the effort
     for small files. However, if you're working with large files, than I think
     you would want to eliminate even the action 'send' already in the Q, should
-    the file be deleted.
+    the file be deleted. See section O.3 on further optimiation.
     
 
 
@@ -324,8 +324,34 @@ multiple actions recorded in the Q.
 We could use dir snapshots --something like storing the folder structure on the disk,
 or file, and compare it with the previous snapshot and accordingly enQ instructions
 in the Q based on files that were created, modified, deleted during the time when
-either the process was not exectuing or the internet conn could not be established. 
+either the process was not exectuing or the internet conn could not be established.
 
+## O.3 Total squashing
+
+This section describes how you can further optimize the Q, by totally removing
+redundant actions from the Q. 
+Since the Q is SQLite based, we can extend the Q class to update the actions
+corresponding to that file using queries. Mulitple modifications at the same
+location are not recorded again and again, if one is already present in that
+Q. However, moving that file multiple times and b/w and then finally deleting
+that file are actions whose exectuion can be avoided.
+
+    Consider the first scenario, which is described by the following Q.
+    handler.py Q-> [create][move][move]...[move][move]
+                    ^--This is the HEAD, i.e, the most recent action performed on
+                    this file.
+    To avoid this, SQLite queries can be used, and all the [move] actions
+    can be squashed into one. We can simply update the 'dest_path' field, if we
+    find that our Q contains any entries corresponding to the previous 'dest_path'
+    of our 'src_path'. 
+
+    Consider the second scenario, which is described by the following Q.
+    handler.py Q-> [create][move][move]...[move][move][delete]
+                    ^--This is the HEAD, i.e, the most recent action performed on
+                    this file.
+    Here, we would like to totally squash all actions corresponding to this file,
+    as it will eventually be deleted. This can be achieved by removing all actions
+    corresponding to 'src_path'.
 
 # BUGS
 All the known bugs have been listed below, with their status.
