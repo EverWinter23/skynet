@@ -3,6 +3,7 @@
 '''
 
 import logging
+import os
 from watchdog.utils.dirsnapshot import DirectorySnapshot
 from persistqueue import UniqueQ as Q
 
@@ -24,8 +25,9 @@ class SyncSnap():
         self._q = Q(path=db_path, auto_commit=True, multithreading=True)
         logging.info("Syncing folders already present in the dir.")
         for path in self._snap_dir.paths:
-            logging.info("Recorded resource: {}".format(path))
-            self._q.put({'action': 'send', 'src_path': path})
+            if os.path.isdir(path) is False:
+                logging.info("Recorded resource: {}".format(path))
+                self._q.put({'action': 'send', 'src_path': path})
 
     def sync(self):
         print(self.snap_dir.paths)
