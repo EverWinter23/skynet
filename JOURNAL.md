@@ -137,3 +137,9 @@
 
 ## Friday 22nd June 2018
 + Leave of absence
+
+## 25th June 2018 Monday
++ Optimized the Q, no two actions, which are the same, cannot reside in
+  the Q at the same time. Saves a lot of time, for big video files, mods
+  during conn. loss.
++ Started porting code to windows.
