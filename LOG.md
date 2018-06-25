@@ -1,6 +1,6 @@
 SKYNET
 
-## S1. Setting up SSH server
+## Setting up SSH server
 Before using SFTP protocol, we need to setup the SFTP server using SSH.
 
 **Linux**
@@ -16,7 +16,7 @@ also been added because on android devices the SFTP server runs on port 2222.
 
 Detailed setup for windows will be provided later.
 
-## S2. Establishing connection with remote SFTP server
+## Establishing connection with remote SFTP server
 
 Using the [pysftp](http://pysftp.readthedocs.io/en/release_0.2.9/) library 
 (soft wrapper around paramiko lib) for establishing connection with the SFTP 
@@ -41,7 +41,7 @@ Changes will only be needed to apply to the sftpcon.py module.
         # upload a local file to the SFTP server
         sftp.put('local_file_path')
 
-## S3. The concept of Mapping
+## The concept of Mapping --mapper.py
 
 **Example:** Say, we want to sync the folder x to the folder y on the remote SFTP server.
 
@@ -79,7 +79,7 @@ Let alphabets represent a directory, then we can represent the paths as:
 
 Detailed setup for SSH keys will be provided later.
 
-## S4. Monitoring the local dir for changes --wathcer.py
+## Monitoring the local dir for changes --watcher.py
 
 watcher.py module Watches a dir for any changes within that dir for any file 
 system event (create, delete, rename, move etc...) and takes appropriate action.
@@ -93,7 +93,7 @@ calls to event handlers to take appropriate action.
 **Handler** Handles the actual execution of the action taken by ovveriding
 methods.
 
-## S5. Handling the file system events --handler.py
+## Handling the file system events --handler.py
 
 **Directory Modification**
 
@@ -143,7 +143,7 @@ simply mimic the move on the remote SFTP server.
 NOTE: But frist we'll make sure that the path leading up to the new destination
 of the file, exists, --we'll create parent dirs as needed.
 
-## S6. Syncing local dir with remote dir --skynet.py
+## Syncing local dir with remote dir --skynet.py
 
 The following is a list of things that need to be done to done, to set-up complete
 syncing.
@@ -165,7 +165,7 @@ syncing.
 **NOTE:** The Q(if implemented) will need to be saved somewhere-> if the local PC was
 to shut down. The Q will also lead to Poducer-Consumer problem which will need to handled.
 
-## S7. Fault tolerant and recoverable syncing
+## Fault tolerant and recoverable syncing
 Will use [persist-queue](https://pypi.org/project/persist-queue/) module as it implements
 a file-based queue, and also achieves the main 3 features we desire:
 
@@ -189,7 +189,7 @@ corresponding file system event.
 Whilst, the handler.py module checks the Q for any pending actions --which have not
 been executed yet. 
 
-## S8. Syncing files already present in a folder mapping --syncsnap.py
+## Syncing files already present in a folder mapping --syncsnap.py
 
 Prior to this commit->(syncsnap.py: Sync folders based on dir snapshots), skynet did
 not have this feature. Now, the resources already present in the dir to be monitored
@@ -209,7 +209,7 @@ dispatch when we do have an internet connection for direct monitoring--although 
 be using the Q, even when we use the watcher. But the main roadblock in implementing
 this is backing up the snapshot to the disk. Pickling maybe??
 
-## S9. Working with aws-s3 --awscon.py
+## Working with amazon-s3 --awscon.py
 
 The library for uploading and downloading will be [boto3](https://github.com/boto/boto3),
 which allows you to write scripts which make use of Amazon-S3's services.
@@ -254,7 +254,7 @@ download.
     for obj in bucket.objects.filter(Prefix='hello'):
     print('{0}:{1}'.format(bucket.name, obj.key))
 
-## S10. Optimizing the Q [Implements both, O.1 and O.2]
+## Optimizing the Q
 
 As described in the section O.1, before the solution described below, had been
 implemented, the Q recorded multiple actions corresponding to a single file.
@@ -288,9 +288,11 @@ will never be enQ'd into the Q.
     
 
 
-# OPTIMIZATIONS
+## OPTIMIZATIONS
 
-## O.1 Optimizing the Q [DONE --see S10]
+### O.1 Optimizing the Q
+
+**Implemented**, see section 'Optimizing the Q' for details.
 
 As things stand right now, the Q records multiple actions when a single large file
 is copied or moved into the dir being monitored/synced, which is redundant, because
@@ -304,7 +306,9 @@ are produced quicker than an observer can consume them.
 Will have to switch from persistQ to this EventQueue, but backing up onto the disk
 is a raodblock, rightnow.
 
-## O.2 Squashing actions [DONE]
+### O.2 Squashing actions [DONE]
+
+**Implemented**, see section 'Optimizing the Q' for details.
 
 We could really benefit from squashing the actions corresponding to a file into the
 most recent one, --here we only execute one action for that file, which might have
@@ -326,7 +330,7 @@ or file, and compare it with the previous snapshot and accordingly enQ instructi
 in the Q based on files that were created, modified, deleted during the time when
 either the process was not exectuing or the internet conn could not be established.
 
-## O.3 Total squashing
+### O.3 Total squashing
 
 This section describes how you can further optimize the Q, by totally removing
 redundant actions from the Q. 
@@ -353,10 +357,10 @@ that file are actions whose exectuion can be avoided.
     as it will eventually be deleted. This can be achieved by removing all actions
     corresponding to 'src_path'.
 
-# BUGS
+## BUGS
 All the known bugs have been listed below, with their status.
 
-### Bug #1 [RESOLVED]
+### Bug #1 [FIXED]
 
 How to handle actions which ran into error during their execution?
 
@@ -387,7 +391,7 @@ makes sure that the actions are executed inorder.
 
 NOTE: handler.py and watcher.py run independent of each other, --as threads.
 
-### Bug #2 [RESOLVED]
+### Bug #2 [FIXED]
 
 This bug arises when an action is unable to complete due to some error during its
 execution. The way that handler.py handles unsuccessfull actions right now, is that
