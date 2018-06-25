@@ -6,7 +6,11 @@
 import posixpath
 # for native os
 import os
+import sys
 import logging
+
+# checks wheather native os is Windows
+IS_WIN = sys.platform.startswith('win')
 
 
 class Mapper:
@@ -58,8 +62,6 @@ class Mapper:
 
     def map_to_remote_path(self, local_path):
         """
-        TODO: Add windows support
-
         Maps a local path in the dir being monitored to a remote path
         on the SFTP server to reflect the changes.
 
@@ -79,6 +81,10 @@ class Mapper:
         #   relative_path = tech-crunch/file.txt
         #   remote_path = Sync/tech-crunch/file.txt
         relative_path = local_path[len(self.local_base):]
+
+        if IS_WIN:  # for windows
+            relative_path = relative_path.replace('\\', '/')
+
         remote_path = self.remote_base + relative_path
 
         logging.info("Mapped local_path->\'{}\' to remote_path->\'{}\'".format(
