@@ -44,14 +44,11 @@ class S3Con:
                 mapped path of the src_path on the
                 remote storage
         """
-        logging.info('SEND TO =============={}'.format(remote_path))
-        
+
         with open(src_path, 'rb') as data:
             self._client.upload_fileobj(Fileobj=data,
                                         Bucket=self._bucket_name,
                                         Key=remote_path)
-        
-        
 
     def _delete(self, remote_path):
         """
@@ -78,7 +75,6 @@ class S3Con:
         logging.info("To delete {}".format(objects_to_delete))
         self._bucket.delete_objects(Delete={
                                     'Objects': objects_to_delete})
-        
 
     def _move(self, remote_src_path, remote_dest_path):
         """
@@ -101,13 +97,13 @@ class S3Con:
 
         cpy_src = os.path.join(self._bucket_name, old_key)
         logging.info("The source loc for copy is /'{}/'".format(cpy_src))
-        
+
         self._client.copy_object(Bucket=self._bucket_name,
-                                CopySource=cpy_src,
-                                Key=new_key)
-        
-            # also note that object to move is also the object to be
-            # deleted, so we'll just delete that object over here
-        
+                                 CopySource=cpy_src,
+                                 Key=new_key)
+
+        # also note that object to move is also the object to be
+        # deleted, so we'll just delete that object over here
+
         self._client.delete_object(Bucket=self._bucket_name,
                                    Key=old_key)
