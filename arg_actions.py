@@ -10,8 +10,8 @@ from printmsgs import *
 
 # any changes to the version made here
 SKYNET = 'skynet'
-# TODO: Always mark version --1.2 with s3 support
-VERSION = '1.2'
+# TODO: Always mark version --1.2 with windows support
+VERSION = '1.3'
 # name of config file
 CONFIG_FILE = 'config.ini'
 HOME = str(Path.home())
