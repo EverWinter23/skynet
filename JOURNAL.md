@@ -124,12 +124,16 @@
   are not recorded multiple times.
 + Went on a field trip and got to see how drones collected data.
 
-  ## Wendnesday 20th June 2018
-  + Finished s3con.py --handles connection and ops like move, delete, send to s3-bucket.
-  + Started working on a cli for configurin s3-bucket service.
-  + Attended weekly programming feedback session. 
+## Wendnesday 20th June 2018
++ Finished s3con.py --handles connection and ops like move, delete, send to s3-bucket.
++ Started working on a cli for configurin s3-bucket service.
++ Attended weekly programming feedback session. 
 
-  ## Thursday 21st June 2018
-  + Started seperating skynet.py from sftpcon.py so that it can pretty much run with
-    any cloud service.
-  
+## Thursday 21st June 2018
++ Started seperating skynet.py from sftpcon.py so that it can pretty much run with
+  any cloud service.
++ skynet.py can now run with any cloud service, provided a 'XCon' class with methods
+  _delete, _move and _send.
+
+## Friday 22nd June 2018
++ Leave of absence
