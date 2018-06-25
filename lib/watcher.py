@@ -9,6 +9,7 @@ from watchdog.events import DirCreatedEvent
 from watchdog.events import DirModifiedEvent
 from watchdog.events import DirMovedEvent
 
+
 class Watcher(PatternMatchingEventHandler):  # watcher on the wall
     """
     Watches a dir for any changes within that dir for any
@@ -30,7 +31,7 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
         _q: UniqueQ
             stores actions onto the disk using SQLiteDB
             for recoverability and fault tolerance.
-        
+
         _qsize: int
             size of Q, denotes number of actions enQ'd in
             the Q.
@@ -57,7 +58,7 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
 
         if not isinstance(event, DirCreatedEvent):
             self._q.put({'action': 'send', 'src_path': event.src_path})
-            if self._qsize  + 1 == self._q.size:
+            if self._qsize + 1 == self._q.size:
                 self._qsize += 1
                 logging.info("Recorded creation: {}".format(event.src_path))
 
@@ -102,7 +103,7 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
             if self._qsize + 1 == self._q.size:
                 self._qsize += 1
                 logging.info("Recorded modification: {}".format(event.src_path))
-        
+
     def on_moved(self, event):
         """
         Called when a file or dir is renamed or moved.
@@ -110,9 +111,8 @@ class Watcher(PatternMatchingEventHandler):  # watcher on the wall
 
         if not isinstance(event, DirMovedEvent):
             self._q.put({'action': 'move', 'src_path': event.src_path,
-                        'dest_path': event.dest_path})
+                         'dest_path': event.dest_path})
             if self._qsize + 1 == self._q.size:
                 self._qsize += 1
                 logging.info("Recorded move: \'{}\'->\'{}\'".format(
                     event.src_path, event.dest_path))
-            
