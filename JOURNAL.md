@@ -143,3 +143,8 @@
   the Q at the same time. Saves a lot of time, for big video files, mods
   during conn. loss.
 + Started porting code to windows.
+
+## 26th June 2018 Tuesday
++ Ported the code to windows, everything works as expected ;-). A couple of changes had
+  to be made.
++ Started working on README.md
