@@ -173,7 +173,7 @@ a file-based queue, and also achieves the main 3 features we desire:
 
 **Thread-safe:** Can be used by multi-threaded producers and multi-threaded consumers.
 
-**Recoverable:** Items can be read after process restart.
+**Recoverable:** Items can be read after process restarts.
 
 We integrate it with the watcher.py module by enQing the action needed to handle the 
 corresponding file system event. 
@@ -263,7 +263,8 @@ action again and again --corresponding to the same file and thus also wasted
 bandwidth and time.
 
 **persistqueue.UniqueQ** is an SQLite based Q --which provides us with features desc
-in section S7 and also ensures, that no two actions in the Q are exactly alike.
+in section 'Fault tolerant and recoverable syncing' and also ensures, that no two 
+actions in the Q are exactly alike.
 
 One might woonder, how does this help in squashing actions? FileSystemEvents heavily
 comprise of modifications. During the life-time of a file, most of the events
