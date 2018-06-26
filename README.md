@@ -26,20 +26,21 @@ NOT COMPLETE YET.
 
 ## ACTION FileSystemEvent Actions
 
-Every FileSystemEvent has a corresponding action associated with it, which is enQ'd in the
-when that event takes place. There are only 3 types of actions corresponding to all events,
+Every FileSystemEvent has a corresponding action associated with it, which is enQ'd in the Q,
+when that event takes place. There are only 3 types of actions for handling all the events,
 namely --[send], [delete], [move].
 
-    # [send] action, with args src_path
-    self._q.put({'action': 'send', 'src_path': event.src_path})
-    # [delete]] action, with args src_path
-    self._q.put({'action': 'delete', 'src_path': event.src_path})
-    # [move] action with args src_path and dest_path
-    self._q.put({'action': 'move', 'src_path': event.src_path,
-                 'dest_path': event.dest_path})
-
-NOTE: self._q here is an instance of the Q class [UniqueQ] which has beed further explained
-below.
+```python
+# [send] action, with args src_path
+self._q.put({'action': 'send', 'src_path': event.src_path})
+# [delete]] action, with args src_path
+self._q.put({'action': 'delete', 'src_path': event.src_path})
+# [move] action with args src_path and dest_path
+self._q.put({'action': 'move', 'src_path': event.src_path,
+              'dest_path': event.dest_path})
+```
+**NOTE:** self._q here is an instance of the Q class [UniqueQ] which has been further
+explained below.
 
 ## UNIQUEQ Stores Actions
 
@@ -47,11 +48,12 @@ Our Q is an SQLiteDB based Q which makes it fault-tolerant and recoverable. Not 
 one of the majore reasons that out of all possible SQLiteDB based Qs, this one was selected
 because of one very special reason --it does not allow duplicate entries.
 
-        from persistqueue import UniqueQ as Q
-        # NOTE:
-        #   auto_commit value depends on what you're trying to achieve
-        self._q = Q(path=db_path, auto_commit=True, multithreading=True)
-        
+```python
+from persistqueue import UniqueQ as Q
+# NOTE:
+#   auto_commit value depends on what you're trying to achieve
+self._q = Q(path=db_path, auto_commit=True, multithreading=True)
+```     
 
 + **Disk Based** Q which ensures that each queued action is backed-up onto the disk,
   in case of crashes or should we decide to pause the process or shut-down the PC.
@@ -107,10 +109,84 @@ because of one very special reason --it does not allow duplicate entries.
     exists, --if not we create the parent dirs as needed.
     
     + **Resource Deletion**
-    If a resource [file/dir] is deleted in the local dir which is being monitored, we 
-    will only delete that file if it is present on the remote dir only if this complete-sync
-    mode is set to True, otherwise the deleted files will be retained on the remote storage.
+    If a resource [file/dir] is deleted in the local dir which is being monitored, those
+    files will be deleted on the rmote storage only if the complete-sync mode is set to True,
+    otherwise the deleted files will be retained on the remote storage.
 
+## HANDLER Schedules Actions
+
++ Retreives the actions stored in the Q one by one and only commits the changes to the DB, if
+  the action is successfull.
++ However, if the execution ran into any error during execution, except for FileNotFoundError,
+  _thread_handler is stopped.
++ When the con. is re-estd. again, the _thread_handler recieves a new instance of the **XCon**
+  class and it picks up from where it was stopped.
+
+## MAPPER Maps Local Files to Remote Storage
+
+**Example**
+Say, we want to sync the folder x to the folder y on our remote storage. Let the alphabets
+represent a directory, then we can represent the paths as:
+
+    NOTE: Using -> to represent '/' in Linux and '\\' in Windows
+    Here,
+      local_root = o->l
+      remote_root = o->o->r
+      local_dir = x
+      remote_dir = y
+
+    Remote dir structure: [o->l->y]->...
+                          [-------]
+                           ^^^^^^^ this part, --forms your remote_base
+
+    Local dir structure: [o->o->r->x]->z->a
+                         [----------]
+                          ^^^^^^^^^^ this part, --forms your local_base
+
+    For tranfering a file in the dir x, we first strip its absolute path
+    of its local_base to obtain it's relative path.
+    For the sake of this example, let's say we want to transfer the dir a.
+    Then the relative path of 'a' to the local base will be: z->a
+
+    After this, we map this relative path to the remote dir by appending
+    this relative path to the remote_base.
+
+    After the transfer is complete,
+    Remote dir structure: [o->l->y]->z->a
+                          [-------]
+                           ^^^^^^^ this part, --forms your remote_base
+
+## XCON The Connection Class
+
+'X' in **XCon** stands for the type of remote storage, for example SFTPCon, S3Con.
+
++ Responsible for implementing _send, _move, _delete methods accordingly to the requirements 
+  and limitations of the remote storage.
++ Do not handle any exceptions in this class, they'll be taken care of automatically, should
+  they arise.
+      
+Whatever args you need to pass to the constructor, will be passed from the config
+file. So, some changes will have to be made in skynet.py.
+
+```python
+# template for connection class
+class XCon:
+  def __init__(self, whatever's required):
+    pass
+  
+  def _send(self, src_path, remote_path):
+    pass
+
+  def _delete(self, src_path):
+    pass
+          
+  def _move(self, remote_src_path, remote_dest_path):
+    pass
+```
+
++ The following represents a the checklist of cahnges that will need to be made:
+  + [x] Add service to --run-with arg, and gen and writing config to config.ini file.
+  + [x] A _get_x_con method to skynet.py, register it with _get_connection method.
 
 # LICENSE [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 
