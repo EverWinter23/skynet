@@ -153,10 +153,12 @@
 ### 27th June 2018 Wednesday
 + Researched on multi-part resumable uploads and how to implement them with the existing
   architecture.
++ Started working on chunkio.py, for chunking big files into smaller parts. 
 + Weekly Progress Meeting
 
 ### 28th June 2018 Thursday
-+ Concept of chunking big files and assembling them at the storage side.
++ Completed chunkio.py for chunking big files.
++ Researched on assembling the chunks at the storage side.
 + aws s3 multi-part uploads using boto3
 
 ### 29th June 2018 Friday
