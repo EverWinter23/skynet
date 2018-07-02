@@ -164,3 +164,5 @@
 + Hosted a notification server on Heroku with Postgres
 
 ### 2nd July 2018 Monday
++ Django-app for notification and remote progress monitoring complete.
++ Working on notifier.py which will push the notifications to the DB server.
