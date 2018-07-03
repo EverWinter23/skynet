@@ -100,7 +100,7 @@ class SkyNet:
         logging.info('Running with service {}.'.format(self._service_type))
         # connection to storage service
         self._con_service = None
-
+        
         # start the daemon
         logging.info('Daemon started.')
         self._start_execution()
@@ -159,9 +159,8 @@ class SkyNet:
                     logging.info('_thread_handler_ halted.')
                     logging.info('The scheduled actions have been paused.')
             else:
-                logging.info('The scheduled actions are executing.')
                 logging.info('_exec slept->{}'.format(datetime.now()))
-                sleep(10)  # if we have a handler --sleep for 5 minutes
+                sleep(60)  # if we have a handler --sleep for 5 minutes
                 logging.info('_exec got up->{}'.format(datetime.now()))
 
     def _get_connection(self):
