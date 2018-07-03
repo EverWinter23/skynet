@@ -6,34 +6,33 @@ from datetime import datetime
 INSERT_BASE = '''INSERT INTO "pynot_eventnotification" ("action",
 "file", "status", "not_time") VALUES (\'{}\', \'{}\', \'{}\', \'{}\')
 '''
-UPDATE_BASE = '''UPDATE "pynot_eventnotification" SET "status"=\'{}\'
-WHERE "file" = \'{}\' AND "status"=\'{}\'
+UPDATE_BASE = '''UPDATE "pynot_eventnotification" SET "status"=\'{}\',
+"not_time" = \'{}\' WHERE "file" = \'{}\'
 '''
 COMPLETE, PENDING, PROCESSING = 'COMPLETE', 'PENDING', 'PROCESSING'
-
 
 def _lock():
     pass
 
 
-def _new_notification(entry):
-    q = INSERT_BASE.format(
-        entry['action'], entry['src_path'],
-        PENDING, datetime.now())
-    print(q)
-    return q
+def _new_notif(entry):
+    return INSERT_BASE.format(entry['action'], entry['src_path'],
+                              PENDING, datetime.now())
+
+
+def _update_notif(entry):
+    return UPDATE_BASE.format(PENDING, datetime.now(),
+                              entry['src_path'], COMPLETE)
 
 
 def _mark_processing(entry):
-    # q = UPDATE COMPANY SET SALARY = 15000 WHERE ID = 3;
-    q = UPDATE_BASE.format(PROCESSING, entry['src_path'], PENDING)
-    return q
+    return UPDATE_BASE.format(PROCESSING, datetime.now(),
+                              entry['src_path'])
 
 
 def _mark_complete(entry):
-    # q = UPDATE COMPANY SET SALARY = 15000 WHERE ID = 3;
-    q = UPDATE_BASE.format(COMPLETE, entry['src_path'], PROCESSING)
-    return q
+    return UPDATE_BASE.format(COMPLETE, datetime.now(), 
+                              entry['src_path'])
 
 
 def _update_status(entry):
