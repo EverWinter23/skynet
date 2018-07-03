@@ -166,3 +166,11 @@
 ### 2nd July 2018 Monday
 + Django-app for notification and remote progress monitoring complete.
 + Working on notifier.py which will push the notifications to the DB server.
+
+### 3rd July 2018 Tuesday
++ Completed notifier.py, now when an action is recorded in the Q, it also sends
+  a notification to the remote DB using which we can monitor the progress.
++ The schema of the Database is [action, file(primary), status, not_time].
++ The contention b/w handler.py and notifier.py was resolved using sleep() method and
+  will work for real-events in most cases.
++ Resumed working on multi-part resumable uploads.
