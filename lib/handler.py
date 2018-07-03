@@ -4,6 +4,8 @@
 
 from threading import Thread
 import logging
+from time import sleep
+from .notifier import Notifier
 from persistqueue import UniqueQ as Q
 
 
@@ -49,7 +51,9 @@ class Handler(Thread):
         #   when we deQ something from the Q, the change is not committed
         #   until and unless the action is completed.
         self._q = Q(path=db_path, auto_commit=False, multithreading=True)
+        self._db_path = db_path
         self.con = None
+        self._thread_notifier_ = None
 
     def _schedule(self, con):
         """
@@ -109,9 +113,25 @@ class Handler(Thread):
         Retrieves actions stored by the Watcher and execute them one by one.
         """
         self._update_status()
+        
+        logging.info('Init. Notifier')
+        self._thread_notifier_ = Notifier(db_path=self._db_path)
+        logging.info('Initialized Notifier')
 
+        logging.info('Starting _thread_notifier_')
+        self._thread_notifier_.start()
+        logging.info('Started _thread_handler_')
+        # lets our notifier get a head start DO NOT REMOVE
+        sleep(10)
+
+
+        logging.info('The scheduled actions are executing.')
         while True:
             entry = self._q.get()
+            logging.info('Marking PROCESSING:\'{}\''.format(entry['src_path']))
+            self._thread_notifier_._mark_processing(entry)
+            sleep(1)
+            
             try:
                 if entry['action'] == 'send':
                     logging.info('Sending resource.')
@@ -129,8 +149,12 @@ class Handler(Thread):
                     logging.info('Moving resource.')
 
                 # commit changes, i.e. commit deQ
+                sleep(1)
+                logging.info('Marking COMPLETE:\'{}\''.format(entry['src_path']))
+                self._thread_notifier_._mark_complete(entry)
                 self._q.task_done()
-                logging.info("Commited change to the DB.")
+                self._thread_notifier_._decrement_cursor()
+                logging.info("State saved to localDB.")
 
             except FileNotFoundError as error:
                 '''
