@@ -174,3 +174,11 @@
 + The contention b/w handler.py and notifier.py was resolved using sleep() method and
   will work for real-events in most cases.
 + Resumed working on multi-part resumable uploads.
+
+### 4th July 2018 Wednesday
++ Instead of threads, partitions will be uploaded using processes as they're much
+  faster than threads according to benchmarks performed. Single threaded process
+  was faster compared to multi-threaded, but not faster than multi-processes.
++ Basic support for resumable multi-parts added to s3con.py.
++ Need to test the strategies employed and see wheather or not they acheive the
+  desired result.
