@@ -5,7 +5,6 @@
 from pysftp import Connection, CnOpts
 import logging
 
-# TODO: Support for windows
 import os
 
 
@@ -121,7 +120,7 @@ class SFTPCon:
         cmd = 'mv "' + remote_src_path + '" "' + remote_dest_path + '"'
         self._con.execute(cmd)
 
-
+  
 def main():
     pass
 
