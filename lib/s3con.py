@@ -3,12 +3,15 @@
 '''
 
 import os
+import math
 import shelve
 import logging
 from boto3 import client
 from boto3 import resource
-from .chunkio import ChunkIO
-from mulitprocessing import Process
+import threading
+from threading import Lock
+from threading import Thread
+
 
 KB = 1024
 MB = KB * KB
@@ -16,6 +19,13 @@ PART_LIM = 5 * MB
 XPARTS = 'xparts'
 UPLOAD_ID = 'upload_id'
 XPARTS_FILE = 'xparts'
+PART_LIST = 'parts'
+
+logFormat = '[%(levelname)s %(filename)s %(lineno)d]: %(message)s'
+    
+logging.basicConfig(filename='skynet.log', level='INFO',
+                    filemode='w', format=logFormat)
+
 
 
 class S3Con:
@@ -34,9 +44,9 @@ class S3Con:
             default region
     """
 
-    def __init__(self, bucket_name, key_id, secret_key, region):
-        self._client = client('s3',
-                              aws_access_key_id=key_id,
+    def __init__(self, bucket_name, key_id, secret_key, region,
+                 db_path, _multipart=True, _xthreads=1):
+        self._client = client('s3', aws_access_key_id=key_id,
                               aws_secret_access_key=secret_key)
 
         self._bucket_name = bucket_name
@@ -60,7 +70,8 @@ class S3Con:
                 remote storage
         """
 
-        if os.stat(src_path).st_size < PART_LIM and self._multipart:
+        if os.stat(src_path).st_size > PART_LIM and self._multipart:
+
             self._send_parts(src_path, remote_path)
         else:
             with open(src_path, 'rb') as data:
@@ -125,66 +136,116 @@ class S3Con:
 
         self._client.delete_object(Bucket=self._bucket_name,
                                    Key=old_key)
-    
+
     def _send_parts(self, src_path, key):
-        logging.inof('Loading partitioning info.')
-        _upload_id = self._load_parts(key)
-        
+        logging.info('Loading partitioning info.')
+        _upload_id = self._load_parts(src_path, key)
+
         # upload x parts simultaneously
         while self._xparts[XPARTS]:
-            _num_parts_ = len(self._xparts[XPARTS]))
-            _prcoesses_ = []
+            logging.info('PART>>>>>{}'.format(self._xparts[XPARTS]))
+            _num_parts_ = len(self._xparts[XPARTS])
+            _processes_ = []
 
             _proc_count = min(self._xthreads, _num_parts_)
-            logging.info('Uploading using {} \'threads\'').format(_proc_count)
+            _lock = Lock()
+            logging.info('Uploading using {} \'threads\''.format(_proc_count))
+            
             for x in range(_proc_count):
-                _prcoesses_.append(Process(target=self._upload_part, 
-                                            args=(src_path, key, _upload_id,
-                                            self._xparts[XPARTS][x])
-                                    ).start())
+                _processes_.append(Thread(target=self._upload_part,
+                                          args=(src_path, key, _upload_id,
+                                                self._xparts[XPARTS][x], 
+                                                _lock)))
+            # start the processes
+            
+            for _proc in _processes_:
+                _proc.start()
+            
+            logging.info('ACTIVE================{}'.format(threading.active_count()))
 
             # wait for all 'threads' to complete
-            for _proc in _prcoesses_:
+            for _proc in _processes_:
                 _proc.join()
-        
+               
+        logging.info(self._xparts[PART_LIST])
         # notify s3 to assemble parts
-        pass
-    
-    def _upload_part(self, src_path, key, _upload_id, part_id):
+        self._client.complete_multipart_upload(Bucket=self._bucket_name, 
+                     Key=key, UploadId=_upload_id,
+                     MultipartUpload=self._xparts[PART_LIST])
+
+    def _upload_part(self, src_path, key, _upload_id, part_id, _lock):
         size = os.stat(src_path).st_size
         offset = (part_id - 1) * PART_LIM
         logging.info('part_id={}, offset={}'.format(part_id, offset))
         # check for overflow, last part could be less than 5MB
         _bytes = min(PART_LIM, size - offset)
         logging.info('part_id={}, bytes={}'.format(part_id, _bytes))
-        with open(src_path, 'rb').read(_bytes) as part:
-           self._client.upload_part(Body=part, Bucket=self._bucket_name,
-                                    Key=key, UploadId=_upload_id,
-                                    PartNumber=part_id)
-            self._mark_part(part_id)
+        
+        part = open(src_path, 'rb').read(_bytes)
+        result = self._client.upload_part(Body=part, Bucket=self._bucket_name,
+                                          Key=key, UploadId=_upload_id,
+                                          PartNumber=part_id)
 
+        self._mark_part(part_id, _lock, result)
 
-
-    def _load_parts(self, key):
+    def _load_parts(self, src_path, key):
         if UPLOAD_ID not in self._xparts:
             logging.info('No partitioning info found. Partitioning file.')
-            self._xparts[UPLOAD_ID] = self._bucket.create_multipart_upload(
+            self._xparts[UPLOAD_ID] = self._client.create_multipart_upload(
                                       Bucket=self._bucket_name,
-                                      Key=key)['UploadId']
-
-            size = os.stat(src_path).st_size
-            self._xparts[XPARTS] = list(1, range(math.ceil(size/5) + 1)
+                                      Key=key)['UploadId']                 
             self._xparts.sync()
-        else:
-            return self._xparts[UPLOAD_ID]
+        
+        if XPARTS not in self._xparts:
+            size = os.stat(src_path).st_size
+            self._xparts[XPARTS] = list(range(1, math.ceil(size/PART_LIM) + 1))
+            print(self._xparts[XPARTS])     
+            self._xparts.sync()
 
-    def _mark_part(self, part_id):
-        self._xparts[XPARTS].remove(part_id)
-        self._xparts[XPARTS].sync()
+        if PART_LIST not in self._xparts:
+            self._xparts[PART_LIST] = []                 
+            self._xparts.sync()
+        
+        return self._xparts[UPLOAD_ID]
+
+    def _mark_part(self, part_id, _lock, result):
+        with _lock:
+            # sync only after noth changes have been written
+            self._xparts[XPARTS].remove(part_id)
+            self._xparts[PART_LIST].append({"PartNumber": part_id, 
+                                           "ETag": result["ETag"]})
+            self._xparts.sync()
         logging.info('part_id={} uploaded.'.format(part_id))
         # TODO schema changes, mark part to DB
         # uncomment for listing parts uploaded to the bucket
-        logging.info(self._)
+        logging.info(self._xparts[XPARTS])
 
-    def _abort_parts(self):
-        pass
+    def _abort_parts(self, _upload_id, key):
+        self._client.abort_multipart_upload(Bucket=self._bucket_name,
+                                            Key=key, UploadId=_upload_id)
+
+
+def main():
+    from pathlib import Path
+    SKYNET = 'skynet'
+    HOME = str(Path.home())
+    DIR_PATH = os.path.join(HOME, SKYNET)
+
+    # database path
+    SKYNET_DB = 'skynet_db'
+    DB_PATH = os.path.join(DIR_PATH, SKYNET_DB)
+    bucket = 'skynet23'
+    key_id = 'AKIAJJSXJQLFFCIQQBQQ'
+
+    aws_secret = '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'
+    region = 'us-east-1'
+    con = S3Con('skynet23', key_id, aws_secret, region, DB_PATH)
+
+    src = '/home/frost/Code/upload.mkv'
+    remote = 'upload.mkv'
+    print('Stuff is happenning')
+    con._send(src, remote)
+
+
+if __name__ == '__main__':
+    main()
