@@ -69,7 +69,7 @@ place where the config was saved and edit the config there.
 All Done? Now, we're ready. Just execute the following command.
 
     $ python main.py --run-with [SERVICE]
-    # If you wan't to stop it, cntrl + c, will add another way to do that later.
+    # If you want to stop it, hit cntrl + c, will add another way to do that later.
 
 
 
