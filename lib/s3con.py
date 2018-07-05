@@ -145,27 +145,24 @@ class S3Con:
         while self._xparts[XPARTS]:
             logging.info('PART>>>>>{}'.format(self._xparts[XPARTS]))
             _num_parts_ = len(self._xparts[XPARTS])
-            _processes_ = []
+            _threads_ = []
 
-            _proc_count = min(self._xthreads, _num_parts_)
+            _thread_count = min(self._xthreads, _num_parts_)
             _lock = Lock()
-            logging.info('Uploading using {} \'threads\''.format(_proc_count))
+            logging.info('Using {} \'threads\''.format(_thread_count))
             
-            for x in range(_proc_count):
-                _processes_.append(Thread(target=self._upload_part,
+            for x in range(_thread_count):
+                _threads_.append(Thread(target=self._upload_part,
                                           args=(src_path, key, _upload_id,
                                                 self._xparts[XPARTS][x], 
                                                 _lock)))
-            # start the processes
-            
-            for _proc in _processes_:
-                _proc.start()
-            
-            logging.info('ACTIVE================{}'.format(threading.active_count()))
-
+            # start the threads            
+            for _thread in _threads_:
+                _thread.start()
+                        
             # wait for all 'threads' to complete
-            for _proc in _processes_:
-                _proc.join()
+            for _thread in _threads_:
+                _thread.join()
                
         logging.info(self._xparts[PART_LIST])
         # notify s3 to assemble parts
