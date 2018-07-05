@@ -100,7 +100,7 @@ class SkyNet:
         logging.info('Running with service {}.'.format(self._service_type))
         # connection to storage service
         self._con_service = None
-        
+
         # start the daemon
         logging.info('Daemon started.')
         self._start_execution()
