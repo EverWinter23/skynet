@@ -10,8 +10,8 @@ from printmsgs import *
 
 # any changes to the version made here
 SKYNET = 'skynet'
-# TODO: Always mark version --1.4 marks notifier
-VERSION = '1.4'
+# TODO: Always mark version --1.5 marks resumable multipart uploads
+VERSION = '1.5'
 # name of config file
 CONFIG_FILE = 'config.ini'
 HOME = str(Path.home())
