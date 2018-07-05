@@ -72,7 +72,7 @@ class Handler(Thread):
         Transfers a resource(file) to the remote SFTP server.
 
         parameters
-            src_path
+            src_path: str
                 local path of the resource to be sent
         """
         remote_path = self.mapper.map_to_remote_path(src_path)
@@ -83,7 +83,7 @@ class Handler(Thread):
         Deletes a resource on the remote SFTP server.
 
         parameters
-            src_path
+            src_path: str
                 local path of the resource to be deleted
         """
         remote_path = self.mapper.map_to_remote_path(src_path)
@@ -94,10 +94,10 @@ class Handler(Thread):
         Moves a resource on the remote SFTP server.
 
         parameters
-            src_path
+            src_path: str
                 local path of the resource before it was moved
 
-            dest_path
+            dest_path: str
                 local path of the resource after it was moved
         """
         remote_src_path = self.mapper.map_to_remote_path(src_path)
@@ -146,7 +146,9 @@ class Handler(Thread):
                     again. This ensures that change is reflected in the remote
                     dir and not lost due to an error in connectivity.
                 '''
-                # self._q.put(entry)
+                # now we cannot do anything, as the file has been removed
+                # might as well continue with the files that are present
+                self._q.task_done()
                 logging.error('ERROR: {}'.format(error))
                 logging.info('Continuing gracefully.')
 
