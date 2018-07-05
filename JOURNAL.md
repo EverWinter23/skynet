@@ -182,3 +182,23 @@
 + Basic support for resumable multi-parts added to s3con.py.
 + Need to test the strategies employed and see wheather or not they acheive the
   desired result.
+
+### 5th July 2018 Thursday
++ Spawning the sub-processes took longer, not only that, you cannot manipulate 
+  the parent process's resources directly. Thus, I went ahead and used multiple
+  threads.
++ Faster than single threaded setup as multiple parts are being uploaded at the
+  same time.
++ Each thread that is spawned is able to mark the part which it has uploaded, so
+  even if the system were to crash, we would atleast have a record of the parts
+  that were uploaded successfully and we can upload the parts which were not.
++ After all parts have been uploaded, the parts are stitched together by sending
+  s3 a signal that all parts have been uploaded with a list of parts and their
+  corresponding 'ETags' which we store after successful transmission on the disk
++ We do not need to take care of the assembling process. Google buckets also 
+  supports multi-part uploads.
++ Part Limit set by s3 buckets is 5MB, so we cannot go any lower than that. However
+  we can go higher.
++ You can set any arbitrary number of threads during for uploading the parts. For
+  efficiency, I'd reccomend keeping them under 10.
++ Started working on updating the progress of the multi-part uploads
