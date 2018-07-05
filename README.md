@@ -1,27 +1,52 @@
 # README
 
-NOT COMPLETE YET.
 
 ## SKYNET The Main Module
 
 + Can work with sftp, aws-s3 or any storage service you might want to use, provided that a
-  con. class has been supplied. 
+  con. class has been supplied.
 + Uses **polling** to establish connection with the remote storage.
 + Syncs files already present in the folder to be monitored.
 + Init. _thread_watcher to monitor subsequent file system events in that dir.
 + Init. _thread_handler to execute actions recorded in the Q.
 + If the connection is lost at any point during exec, _thread_handler is halted and is only
   restarted when the con. has been re-estd.
++ Sends notifications to a hostedDB when an action is enQ'd or an action is completed, using
+  which you can remotely monitor actions. Sepearte Django-app in dev, will add the link to
+  it when its completed.
++ Supports resumable **multipart uploads**[aws-s3 only], for big files. Even if the transfer
+  gets interrupted somehow, or your PC crashes mid-transfer, the upload won't start from the
+  beginning.
++ For any problems during execution, you can see the **skynet.log** file for debugging and
+  figuring out exactly where things went wrong.
+
 
 ### THE CORE
 
 + **Watcher** A thread that watches dir for FileSystemEvents and records actions
   corresponding to each one in a Q.
 + **Handler** Handles the execution of the actions recorded by dispatching them to the
-  **XCon** class and also ensures that scheduled actions are executed without any hiccup.
+  **XCon** The connection class, also provides native implementation of the scheduled 
+  actions like _send, _delete, _move etc.
 + **Connection** Class which is supplied to **skynet** which is responsible for actual
- interaction with the remote storage and must implement _send, _delete, _move methods.
+  interaction with the remote storage and must implement _send, _delete, _move methods.
++ **Notifier** Sends notifications to Heroku-Postgres DB for monitoring progress remotely.
 + **Mapper** Maps a local path to the remote storage.
+
+
+## INSTALLATION and CONFIGRUATION
+
+The very first thing you need to do is cloning the repository and installing the required
+python-libraries. Make sure you're working with **PYTHON 3.6.**
+
+    $ git clone https://github.com/EverWinter23/skynet
+    $ cd skynet
+    $ pip install -r requirements.txt
+
+
+
+
+
 
 
 ## ACTION FileSystemEvent Actions
