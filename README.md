@@ -1,5 +1,6 @@
 # README
 
+Work in Progress.
 
 ## SKYNET The Main Module
 
@@ -43,9 +44,32 @@ python-libraries. Make sure you're working with **PYTHON 3.6.**
     $ cd skynet
     $ pip install -r requirements.txt
 
+Now, that you have installed the required python packages, you'll need to setup **skywatch**,
+--the Django-app for monitoring progress remotely. This step's one's optional. If you don't
+want to do that you can just remove the Notifier instance param and you'll be good to go.
 
+We'll host this app on Heroku with Heroku-Postgres for our Database and Django for the web
+framework.
 
+>NOTE: Will add later.
 
+After you're done with that, now you need to configure your setup. You can do that by using
+cli. Navigate to the dir where you cloned the repo and execute the following command. 
+Supported services are S3 and SFTP. The cli will guide you through the complete config for
+the service you selected. Should you screw the config during this, you can go ahead and edit
+the config file using any text editor.  **Refer to README.md, if you get stuck during the 
+Sync Configration, because mapping can be tricky.**  Other than that, it's pretty straight
+forward.
+
+    $ python main.py --config [SERVICE]
+
+**NOTE:** You can aslo pass empty params, keep on pressing enter when you're done, go to the
+place where the config was saved and edit the config there.
+
+All Done? Now, we're ready. Just execute the following command.
+
+    $ python main.py --run-with [SERVICE]
+    # If you wan't to stop it, cntrl + c, will add another way to do that later.
 
 
 
