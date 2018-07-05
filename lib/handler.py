@@ -20,23 +20,18 @@ class Handler(Thread):
     """
     The Handler class actually handles the transfers
     between the local storage and the remote storage.
-
     NOTE: Resource in this context refers to file or dir
     unless explicitly specified.
-
     parameters
         mapper: Mapper
             an instance of Mapper class to map local files
             to their respective paths on the SFTP server.
-
         db_path: str
             path to the database where actions are
             stored.
-
     attributes
         _is_running: boolean
             indicates the current status of the thread
-
         _q: UniqueQ
             retrieves actions stored by the wathcer in the
             Q and executes them when the connection exists.
@@ -74,7 +69,6 @@ class Handler(Thread):
     def send_resource(self, src_path):
         """
         Transfers a resource(file) to the remote SFTP server.
-
         parameters
             src_path: str
                 local path of the resource to be sent
@@ -85,7 +79,6 @@ class Handler(Thread):
     def delete_resource(self, src_path):
         """
         Deletes a resource on the remote SFTP server.
-
         parameters
             src_path: str
                 local path of the resource to be deleted
@@ -96,11 +89,9 @@ class Handler(Thread):
     def move_resource(self, src_path, dest_path):
         """
         Moves a resource on the remote SFTP server.
-
         parameters
             src_path: str
                 local path of the resource before it was moved
-
             dest_path: str
                 local path of the resource after it was moved
         """
@@ -113,7 +104,7 @@ class Handler(Thread):
         Retrieves actions stored by the Watcher and execute them one by one.
         """
         self._update_status()
-        
+
         logging.info('Init. Notifier')
         self._thread_notifier_ = Notifier(db_path=self._db_path)
         logging.info('Initialized Notifier')
@@ -124,14 +115,13 @@ class Handler(Thread):
         # lets our notifier get a head start DO NOT REMOVE
         sleep(10)
 
-
         logging.info('The scheduled actions are executing.')
         while True:
             entry = self._q.get()
             logging.info('Marking PROCESSING:\'{}\''.format(entry['src_path']))
             self._thread_notifier_._mark_processing(entry)
             sleep(1)
-            
+
             try:
                 if entry['action'] == 'send':
                     logging.info('Sending resource.')
@@ -150,7 +140,8 @@ class Handler(Thread):
 
                 # commit changes, i.e. commit deQ
                 sleep(1)
-                logging.info('Marking COMPLETE:\'{}\''.format(entry['src_path']))
+                logging.info(
+                    'Marking COMPLETE:\'{}\''.format(entry['src_path']))
                 self._thread_notifier_._mark_complete(entry)
                 self._q.task_done()
                 self._thread_notifier_._decrement_cursor()
@@ -164,7 +155,6 @@ class Handler(Thread):
                         Since,  I was enQing the action --at the end of the Q,
                         what if a 'send' action failed, and there was a 'move'/
                         'delete' action on the same file.
-
                     Because an exception occured, while executing the action
                     we'll add it to the queue so that it may be re-executed
                     again. This ensures that change is reflected in the remote

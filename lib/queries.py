@@ -3,6 +3,7 @@
 '''
 from datetime import datetime
 
+# TODO: Change table name for every mapping or project
 INSERT_BASE = '''INSERT INTO "pynot_eventnotification" ("action",
 "file", "status", "not_time") VALUES (\'{}\', \'{}\', \'{}\', \'{}\')
 '''
@@ -10,6 +11,7 @@ UPDATE_BASE = '''UPDATE "pynot_eventnotification" SET "status"=\'{}\',
 "not_time" = \'{}\' WHERE "file" = \'{}\'
 '''
 COMPLETE, PENDING, PROCESSING = 'COMPLETE', 'PENDING', 'PROCESSING'
+
 
 def _lock():
     pass
@@ -31,7 +33,7 @@ def _mark_processing(entry):
 
 
 def _mark_complete(entry):
-    return UPDATE_BASE.format(COMPLETE, datetime.now(), 
+    return UPDATE_BASE.format(COMPLETE, datetime.now(),
                               entry['src_path'])
 
 
