@@ -10,7 +10,8 @@ import os
 
 class SFTPCon:
     """
-    Maintains an SSH connection to a remote server using the pysftp lib.
+    Establishes SSH connection to a remote server and helps
+    in sending, moving and deleting files on the remote server.
 
     parameters
         host:str
@@ -120,7 +121,7 @@ class SFTPCon:
         cmd = 'mv "' + remote_src_path + '" "' + remote_dest_path + '"'
         self._con.execute(cmd)
 
-  
+
 def main():
     pass
 
