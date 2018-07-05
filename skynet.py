@@ -213,7 +213,8 @@ class SkyNet:
                 s3con = S3Con(bucket_name=self.config[S3]['bucket'],
                               key_id=self.config[S3]['key_id'],
                               secret_key=self.config[S3]['aws_secret'],
-                              region=self.config[S3]['region'])
+                              region=self.config[S3]['region'],
+                              db_path=self.db_path)
 
                 # must've obtained the connection
                 logging.info('Initialized S3Con.')
