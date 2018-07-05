@@ -3,6 +3,7 @@
 '''
 from datetime import datetime
 
+# TODO: Change table name for every mapping or project
 INSERT_BASE = '''INSERT INTO "pynot_eventnotification" ("action",
 "file", "status", "not_time") VALUES (\'{}\', \'{}\', \'{}\', \'{}\')
 '''
