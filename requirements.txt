@@ -4,5 +4,9 @@ boto3
 pysftp
 # for monitoring file system events
 watchdog
-# for recoverable, faul-tolerant, disk-based Q
+# for recoverable, fault-tolerant, disk-based Q
 persist-queue
+# for sending notifications, postgres DB driver
+psycopg2-binary
+# for partitioning files
+filechunkio
