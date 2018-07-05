@@ -147,27 +147,28 @@ class S3Con:
             _thread_count = min(self._xthreads, _num_parts_)
             _lock = Lock()
             logging.info('Using {} \'threads\''.format(_thread_count))
-            
+
             for x in range(_thread_count):
                 _threads_.append(Thread(target=self._upload_part,
-                                          args=(src_path, key, _upload_id,
-                                                self._xparts[XPARTS][x], 
-                                                _lock)))
-            # start the threads            
+                                        args=(src_path, key, _upload_id,
+                                              self._xparts[XPARTS][x],
+                                              _lock)))
+            # start the threads
             for _thread in _threads_:
                 _thread.start()
-                        
+
             # wait for all 'threads' to complete
             for _thread in _threads_:
                 _thread.join()
-               
+
         logging.info(self._xparts[PART_LIST])
         # notify s3 to assemble parts
-        self._client.complete_multipart_upload(Bucket=self._bucket_name, 
+        self._client.complete_multipart_upload(
+                     Bucket=self._bucket_name,
                      Key=key, UploadId=_upload_id,
                      MultipartUpload={"Parts": self._xparts[PART_LIST]})
-        
-        # clean up shelve
+
+        # clean up shelve for next upload
         self._xparts.clear()
         self._xparts.sync()
 
@@ -178,12 +179,12 @@ class S3Con:
         # check for overflow, last part could be less than 5MB
         _bytes = min(PART_LIM, size - offset)
         # logging.info('part_id={}, bytes={}'.format(part_id, _bytes))
-        
-        part = FileChunkIO(src_path, 'r', offset=offset, 
-                          bytes=_bytes).read()
+
+        part = FileChunkIO(src_path, 'r', offset=offset,
+                           bytes=_bytes).read()
         result = self._client.upload_part(Body=part, Bucket=self._bucket_name,
-                                        Key=key, UploadId=_upload_id,
-                                        PartNumber=part_id)
+                                          Key=key, UploadId=_upload_id,
+                                          PartNumber=part_id)
         self._mark_part(part_id, _lock, result)
 
     def _load_parts(self, src_path, key):
@@ -191,9 +192,9 @@ class S3Con:
             logging.info('No partitioning info found. Partitioning file.')
             self._xparts[UPLOAD_ID] = self._client.create_multipart_upload(
                                       Bucket=self._bucket_name,
-                                      Key=key)['UploadId']                 
+                                      Key=key)['UploadId']
             self._xparts.sync()
-        
+
         if XPARTS not in self._xparts:
             size = os.stat(src_path).st_size
             self._xparts[XPARTS] = list(range(1, math.ceil(size/PART_LIM) + 1))
@@ -203,7 +204,7 @@ class S3Con:
             self._xparts[PART_LIST] = [{} for x in range(len(
                                       self._xparts[XPARTS]))]
             self._xparts.sync()
-        
+
         return self._xparts[UPLOAD_ID]
 
     def _mark_part(self, part_id, _lock, result):
@@ -211,8 +212,8 @@ class S3Con:
             # sync only after noth changes have been written
             self._xparts[XPARTS].remove(part_id)
 
-            self._xparts[PART_LIST][part_id - 1] = {"PartNumber": part_id, 
-                                                      "ETag": result["ETag"]}
+            self._xparts[PART_LIST][part_id - 1] = {"PartNumber": part_id,
+                                                    "ETag": result["ETag"]}
             self._xparts.sync()
         # logging.info('part_id={} uploaded.'.format(part_id))
         # TODO schema changes, mark part to DB
