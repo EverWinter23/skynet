@@ -11,6 +11,7 @@ UPDATE_BASE = '''UPDATE "pynot_eventnotification" SET "status"=\'{}\',
 '''
 COMPLETE, PENDING, PROCESSING = 'COMPLETE', 'PENDING', 'PROCESSING'
 
+
 def _lock():
     pass
 
@@ -31,7 +32,7 @@ def _mark_processing(entry):
 
 
 def _mark_complete(entry):
-    return UPDATE_BASE.format(COMPLETE, datetime.now(), 
+    return UPDATE_BASE.format(COMPLETE, datetime.now(),
                               entry['src_path'])
 
 
