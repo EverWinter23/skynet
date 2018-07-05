@@ -113,7 +113,7 @@ class Handler(Thread):
         Retrieves actions stored by the Watcher and execute them one by one.
         """
         self._update_status()
-        
+
         logging.info('Init. Notifier')
         self._thread_notifier_ = Notifier(db_path=self._db_path)
         logging.info('Initialized Notifier')
@@ -124,14 +124,13 @@ class Handler(Thread):
         # lets our notifier get a head start DO NOT REMOVE
         sleep(10)
 
-
         logging.info('The scheduled actions are executing.')
         while True:
             entry = self._q.get()
             logging.info('Marking PROCESSING:\'{}\''.format(entry['src_path']))
             self._thread_notifier_._mark_processing(entry)
             sleep(1)
-            
+
             try:
                 if entry['action'] == 'send':
                     logging.info('Sending resource.')
@@ -150,7 +149,8 @@ class Handler(Thread):
 
                 # commit changes, i.e. commit deQ
                 sleep(1)
-                logging.info('Marking COMPLETE:\'{}\''.format(entry['src_path']))
+                logging.info(
+                    'Marking COMPLETE:\'{}\''.format(entry['src_path']))
                 self._thread_notifier_._mark_complete(entry)
                 self._q.task_done()
                 self._thread_notifier_._decrement_cursor()
