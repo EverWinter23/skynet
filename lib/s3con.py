@@ -1,5 +1,10 @@
 '''
 20th june 2018 wednesday
+NOTE:
+    Any changes you make should not compromise
+    with the atomicity of the actions. Review
+    carefully and multiple times before making
+    any changes, albeit reordering of the stmts.
 '''
 
 import os
@@ -28,17 +33,32 @@ PART_LIST = 'parts'
 class S3Con:
     """
     parameters
-        bucket_name
-            name of the bucket in which files will be stored
+        bucket_name: str
+            name of the aws s3 bucket(case sensitive) to
+            which the files are to be uploaded.
 
-        key_id
-            amazon access-key
+        key_id: str
+            amazon access-key of the dev's IAM account.
 
-        secret_key
-            amazon secret-access-key
+        secret_key: str
+            amazon secret-access-key of the dev's IAM
+            account. Not to be shared.
 
-        region
-            default region
+        region: str
+            default aws region
+
+        db_path: str
+            path to the database where actions are
+            stored, for storing shelve variables.
+
+        _multipart: boolean
+            if set to True, it will upload the file by
+            partitioning the file into mulitple parts if
+            they are above a certain threshold --PART_LIM.
+
+        _xthreads: int
+            number of threads to spawn for uploading the
+            parts simultaneously
     """
 
     def __init__(self, bucket_name, key_id, secret_key, region,
@@ -66,10 +86,15 @@ class S3Con:
                 mapped path of the src_path on the
                 remote storage
         """
+        if os.path.exists(src_path) is False and self._multipart:
+            logging.info('The file \'{}\' does not exist.'.format(src_path))
+            logging.info('Removing partitioning info.')
+            self._abort_parts(src_path)
+            raise FileNotFoundError
 
-        if os.stat(src_path).st_size > PART_LIM and self._multipart:
-
+        elif os.stat(src_path).st_size > PART_LIM and self._multipart:
             self._send_parts(src_path, remote_path)
+
         else:
             with open(src_path, 'rb') as data:
                 self._client.upload_fileobj(Fileobj=data,
@@ -135,6 +160,18 @@ class S3Con:
                                    Key=old_key)
 
     def _send_parts(self, src_path, key):
+        """
+        Uploads the file by partitioning the file into
+        mulitple segements.
+
+        parameters
+            src_path: str
+                local path of the resource to be sent
+
+            key: str
+                the mapped path of the local file on
+                the remote storage
+        """
         logging.info('Loading partitioning info.')
         _upload_id = self._load_parts(src_path, key)
 
@@ -173,21 +210,56 @@ class S3Con:
         self._xparts.sync()
 
     def _upload_part(self, src_path, key, _upload_id, part_id, _lock):
+        """
+        Uploads a part of the file to the remote
+        storage.
+
+        parameters
+            src_path: str
+                local path of the resource to be sent
+
+            key: str
+                the mapped path of the local file on
+                the remote storage
+
+            _upload_id: str
+                multipart upload id for the upload
+
+            _part_id: int
+                the id of the part being uploaded
+
+            _lock: Lock
+                grants exclusive write access to the
+                thread for writing to the 'shelve'
+        """
         size = os.stat(src_path).st_size
         offset = (part_id - 1) * PART_LIM
-        # logging.info('part_id={}, offset={}'.format(part_id, offset))
+
         # check for overflow, last part could be less than 5MB
         _bytes = min(PART_LIM, size - offset)
-        # logging.info('part_id={}, bytes={}'.format(part_id, _bytes))
 
         part = FileChunkIO(src_path, 'r', offset=offset,
                            bytes=_bytes).read()
-        result = self._client.upload_part(Body=part, Bucket=self._bucket_name,
-                                          Key=key, UploadId=_upload_id,
-                                          PartNumber=part_id)
+
+        result = self._client.upload_part(
+                      Body=part, Bucket=self._bucket_name, Key=key,
+                      UploadId=_upload_id, PartNumber=part_id)
+
         self._mark_part(part_id, _lock, result)
 
     def _load_parts(self, src_path, key):
+        """
+        Loads the partioning info of the file
+        from the disk.
+
+        parameters
+            src_path: str
+                local path of the resource to be sent
+
+            key: str
+                the mapped path of the local file on
+                the remote storage
+        """
         if UPLOAD_ID not in self._xparts:
             logging.info('No partitioning info found. Partitioning file.')
             self._xparts[UPLOAD_ID] = self._client.create_multipart_upload(
@@ -208,6 +280,27 @@ class S3Con:
         return self._xparts[UPLOAD_ID]
 
     def _mark_part(self, part_id, _lock, result):
+        """
+        Marks the part as uploaded by removing
+        it from the list of parts to be uploaded.
+
+        TODO: Send notification to the DB that a
+              part has been uploaded. -_-
+
+        parameters
+            _part_id: int
+                the id of the part being uploaded
+
+            _lock: Lock
+                grants exclusive write access to the thread
+                for writing to the 'shelve'
+
+            result: dict
+                response of the aws-s3 of the uploaded part
+        """
+
+        # NOTE: avoids deadlocks
+        # provides the thread with exclusive write access
         with _lock:
             # sync only after noth changes have been written
             self._xparts[XPARTS].remove(part_id)
@@ -220,9 +313,24 @@ class S3Con:
         # uncomment for listing parts uploaded to the bucket
         logging.info(self._xparts[XPARTS])
 
-    def _abort_parts(self, _upload_id, key):
+    def _abort_parts(self, key):
+        """
+        Removes the partitioning info of the corresponding
+        file from the disk, and signals aws-s3 to remove
+        the partitions of that file from the remote storage.
+
+        parameters
+            key: str
+                the mapped path of the local file on
+                the remote storage
+        """
+        _upload_id = self._load_parts()
         self._client.abort_multipart_upload(Bucket=self._bucket_name,
                                             Key=key, UploadId=_upload_id)
+
+        # clean up shelve for next upload
+        self._xparts.clear()
+        self._xparts.sync()
 
 
 if __name__ == '__main__':
