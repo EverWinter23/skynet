@@ -124,8 +124,9 @@ class S3Con:
             return
 
         logging.info("To delete {}".format(objects_to_delete))
-        self._client.delete_objects(Delete={
-                                    'Objects': objects_to_delete})
+        self._client.delete_objects(Bucket=self._bucket_name
+                                    Delete={
+                                        'Objects': objects_to_delete})
 
     def _move(self, remote_src_path, remote_dest_path):
         """
