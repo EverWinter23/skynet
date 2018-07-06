@@ -202,5 +202,11 @@
 + Part Limit set by s3 buckets is 5MB, so we cannot go any lower than that. However
   we can go higher.
 + You can set any arbitrary number of threads during for uploading the parts. For
-  efficiency, I'd reccomend keeping them under 10.
+  efficiency, I'd reccommend keeping them under 10.
 + Started working on updating the progress of the multi-part uploads
+
+## 6th July 2018 Wednesday
++ Made schema changes to Django-app **skywatch** for partial upload monitoring.
++ This will enable the user to monitor the progress of a huge file instead of
+  vague status icons.
++ Working on integrating it with skynet.py
