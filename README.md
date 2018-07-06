@@ -18,6 +18,8 @@ Work in Progress.
 + Supports resumable **multipart uploads**[aws-s3 only], for big files. Even if the transfer
   gets interrupted somehow, or your PC crashes mid-transfer, the upload won't start from the
   beginning.
++ Also sends status updates for partial uploads, so you can monitor the progress of huge
+  file uploads from anywhere.
 + For any problems during execution, you can see the **skynet.log** file for debugging and
   figuring out exactly where things went wrong.
 
