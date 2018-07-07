@@ -5,11 +5,22 @@ from datetime import datetime
 
 # TODO: Change table name for every mapping or project
 INSERT_BASE = '''INSERT INTO "pynot_eventnotification" ("action",
-"file", "status", "not_time") VALUES (\'{}\', \'{}\', \'{}\', \'{}\')
+"file", "size", "status", "not_time") VALUES (\'{}\', \'{}\', \'{}\',
+ \'{}\', \'{}\')
 '''
+
 UPDATE_BASE = '''UPDATE "pynot_eventnotification" SET "status"=\'{}\',
-"not_time" = \'{}\' WHERE "file" = \'{}\'
+"not_time"=\'{}\', "size"=\'{}\' WHERE "file" = \'{}\'
 '''
+
+MARK_BASE = '''UPDATE "pynot_eventnotification" SET "status"=\'{}\',
+"not_time"=\'{}\' WHERE "file" = \'{}\'
+'''
+
+PART_BASE = '''UPDATE "pynot_eventnotification" SET "parts"="parts" + 1,
+"not_time"=\'{}\' WHERE "file" = \'{}\'
+'''
+
 COMPLETE, PENDING, PROCESSING = 'COMPLETE', 'PENDING', 'PROCESSING'
 
 
@@ -17,25 +28,29 @@ def _lock():
     pass
 
 
-def _new_notif(entry):
-    return INSERT_BASE.format(entry['action'], entry['src_path'],
+def _new_notif(action, file, size):
+    return INSERT_BASE.format(action, file, size,
                               PENDING, datetime.now())
 
 
-def _update_notif(entry):
+def _update_notif(file, size):
     return UPDATE_BASE.format(PENDING, datetime.now(),
-                              entry['src_path'], COMPLETE)
+                              size, file)
 
 
-def _mark_processing(entry):
-    return UPDATE_BASE.format(PROCESSING, datetime.now(),
-                              entry['src_path'])
+def _mark_processing(file):
+    return MARK_BASE.format(PROCESSING, datetime.now(),
+                            file)
 
 
-def _mark_complete(entry):
-    return UPDATE_BASE.format(COMPLETE, datetime.now(),
-                              entry['src_path'])
+def _mark_complete(file):
+    return MARK_BASE.format(COMPLETE, datetime.now(),
+                            file)
 
 
-def _update_status(entry):
+def _mark_part(file):
+    return PART_BASE.format(datetime.now(), file)
+
+
+def _update_status(file):
     pass
