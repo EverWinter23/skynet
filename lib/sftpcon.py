@@ -14,25 +14,19 @@ class SFTPCon:
     in sending, moving and deleting files on the remote server.
 
     parameters
-        host:str
+        host: str
             the hostname or IP of remote machine
-
-        username:str
+        username: str
             your username at the remote machine
-
-        password:str
+        password: str
             your password at the remote machine
-
-        port:int
+        port: int
             the SSH port of the remote machine
-
-        private_key
+        private_key: str
             path of the file containing the private SSH key
-
-        private_key_pass:str
+        private_key_pass: str
             password to use, if private_key is encrypted
-
-        compression:boolean
+        compression: boolean
             default True, use True to disable compression
     """
 
@@ -70,10 +64,9 @@ class SFTPCon:
         Transfers a resource(file) to the remote SFTP server.
 
         parameters
-            src_path
+            src_path: str
                 local path of the resource to be sent
-
-            remote_path
+            remote_path: str
                 mapped path of the src_path on the
                 remote storage
         """
@@ -91,7 +84,7 @@ class SFTPCon:
         Deletes a resource on the remote SFTP server.
 
         parameters
-            remote_path
+            remote_path: str
                 path of the resource to be deleted on
                 the remote storage
         """
@@ -105,10 +98,9 @@ class SFTPCon:
         Moves a resource on the remote SFTP server.
 
         parameters
-            remote_src_path
+            remote_src_path: str
                 remote path of the resource before it was moved
-
-            remote_dest_path
+            remote_dest_path: str
                 remote path of the resource after it was moved
         """
         # NOTE: For moving any file, make sure all parent dir
