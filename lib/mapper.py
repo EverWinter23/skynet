@@ -18,27 +18,23 @@ class Mapper:
     Maps a local dir to a remote dir on the SFTP server.
 
     parameters
-        local_root:str
+        local_root: str
             top level dir location on the local machine
-
-        local_dir:str
+        local_dir: str
             dir to sync with the remote dir
-
-        remote_root:str
+        remote_root: str
             top level dir location on the remote server
             NOTE:
                 1. should start with a leading forward slash
                 2. should be an absolute path, no tilde(~) notation
-
-        remote_dir:str
+        remote_dir: str
             dir which will be synced to the local_dir
 
     attributes
-        local_base:str
+        local_base: str
             the absolute path obtained using local_root and
             local_dir's relative path
-
-        remote_base:str
+        remote_base: str
             the absolute path obtained using remote_root
             and remote_dir's relative path
             NOTE:
@@ -66,11 +62,11 @@ class Mapper:
         on the SFTP server to reflect the changes.
 
         parameters
-            local_path
+            local_path: str
                 the FULL path of the resource on the local filesystem
 
         returns
-            remote_path
+            remote_path: str
                 the FULL path of the resource on the remote filesystem
         """
         # strips the local_base from the local_path to get the relative path
