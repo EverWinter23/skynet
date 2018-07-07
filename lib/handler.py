@@ -5,6 +5,7 @@
 from threading import Thread
 import logging
 from time import sleep
+from .s3con import S3Con
 from .notifier import Notifier
 from persistqueue import UniqueQ as Q
 
@@ -20,8 +21,10 @@ class Handler(Thread):
     """
     The Handler class actually handles the transfers
     between the local storage and the remote storage.
+
     NOTE: Resource in this context refers to file or dir
     unless explicitly specified.
+
     parameters
         mapper: Mapper
             an instance of Mapper class to map local files
@@ -29,6 +32,7 @@ class Handler(Thread):
         db_path: str
             path to the database where actions are
             stored.
+
     attributes
         _is_running: boolean
             indicates the current status of the thread
@@ -52,13 +56,26 @@ class Handler(Thread):
 
     def _schedule(self, con):
         """
+        Start the notification process and acknowledge
+        that connection with the remote storage has been
+        established and actions can be executed.
+
         parameters
-            sftpcon: SFTPCon | S3Con
-                An instance of SFTPCon or S3Con class to
+            sftpcon: XCon
+                An instance of XCon class(i.e, SFTPCon, S3Con)
                 transfer files and interact with the remote
                 storage.
         """
         self.con = con
+
+        logging.info('Init. Notifier')
+        self._thread_notifier_ = Notifier(db_path=self._db_path)
+        logging.info('Initialized Notifier')
+
+        # only set the notifier if the SERVICE supports
+        # partial uploading, --like S3Con
+        if isinstance(self.con, S3Con):
+            self.con._set_notifier(self._thread_notifier_)
 
     def _update_status(self):
         """
@@ -69,6 +86,7 @@ class Handler(Thread):
     def send_resource(self, src_path):
         """
         Transfers a resource(file) to the remote SFTP server.
+
         parameters
             src_path: str
                 local path of the resource to be sent
@@ -79,6 +97,7 @@ class Handler(Thread):
     def delete_resource(self, src_path):
         """
         Deletes a resource on the remote SFTP server.
+
         parameters
             src_path: str
                 local path of the resource to be deleted
@@ -89,6 +108,7 @@ class Handler(Thread):
     def move_resource(self, src_path, dest_path):
         """
         Moves a resource on the remote SFTP server.
+
         parameters
             src_path: str
                 local path of the resource before it was moved
@@ -104,10 +124,6 @@ class Handler(Thread):
         Retrieves actions stored by the Watcher and execute them one by one.
         """
         self._update_status()
-
-        logging.info('Init. Notifier')
-        self._thread_notifier_ = Notifier(db_path=self._db_path)
-        logging.info('Initialized Notifier')
 
         logging.info('Starting _thread_notifier_')
         self._thread_notifier_.start()
