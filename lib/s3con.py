@@ -32,67 +32,70 @@ PART_LIST = 'parts'
 
 class S3Con:
     """
+    Establishes connection with s3 bucket and helps
+    in sending, moving and deleting files on the remote
+    bucket storage.
+
     parameters
         bucket_name: str
             name of the aws s3 bucket(case sensitive) to
             which the files are to be uploaded.
-
         key_id: str
             amazon access-key of the dev's IAM account.
-
         secret_key: str
             amazon secret-access-key of the dev's IAM
             account. Not to be shared.
-
         region: str
             default aws region
-
         db_path: str
             path to the database where actions are
             stored, for storing shelve variables.
-
-        _multipart: boolean
+        _m_part: boolean
             if set to True, it will upload the file by
             partitioning the file into mulitple parts if
             they are above a certain threshold --PART_LIM.
-
         _xthreads: int
             number of threads to spawn for uploading the
-            parts simultaneously
+            parts simultaneously.
+
+    attributes
+        _notifier: Notifier
+            sends updates about partial part uploads
+            to the remote DB for progress monitoring
+            of multipart uploads.
     """
 
     def __init__(self, bucket_name, key_id, secret_key, region,
-                 db_path, _multipart=True, _xthreads=5):
+                 db_path, _m_part=True, _xthreads=5):
+
         self._client = client('s3', aws_access_key_id=key_id,
                               aws_secret_access_key=secret_key)
-
         self._bucket_name = bucket_name
         self._bucket = resource('s3').Bucket(bucket_name)
-
         self._xparts = shelve.open(os.path.join(db_path, XPARTS_FILE),
                                    flag='c', protocol=None, writeback=True)
+        self._m_part = _m_part
+        self._notifier = None
         self._xthreads = _xthreads
-        self._multipart = _multipart
 
     def _send(self, src_path, remote_path):
         """
         Transfers a resource(file) to the s3-bucket.
 
         parameters
-            src_path
+            src_path: str
                 local path of the resource to be sent
-
-            remote_path
+            remote_path: str
                 mapped path of the src_path on the
                 remote storage
         """
-        if os.path.exists(src_path) is False and self._multipart:
+        if os.path.exists(src_path) is False and self._m_part:
             logging.info('The file \'{}\' does not exist.'.format(src_path))
             logging.info('Removing partitioning info.')
             self._abort_parts(src_path)
             raise FileNotFoundError
 
-        elif os.stat(src_path).st_size > PART_LIM and self._multipart:
+        elif os.stat(src_path).st_size > PART_LIM and self._m_part:
             self._send_parts(src_path, remote_path)
 
         else:
@@ -107,7 +110,7 @@ class S3Con:
         in the s3-bucket.
 
         parameters
-            remote_path
+            remote_path: str
                 path of the resource to be deleted on
                 the remote storage
         """
@@ -133,10 +136,9 @@ class S3Con:
         Moves a resource in the s3-bucket.
 
         parameters
-            remote_src_path
+            remote_src_path: str
                 remote path of the resource before it was moved
-
-            remote_dest_path
+            remote_dest_path: str
                 remote path of the resource after it was moved
         """
         # NOTE: Relatively more complex, have to copy all
@@ -160,6 +162,16 @@ class S3Con:
         self._client.delete_object(Bucket=self._bucket_name,
                                    Key=old_key)
 
+    def _set_notifier(self, notifier):
+        """
+        Sets the notifier for sending partial upload updates.
+
+        parameters:
+            notifier: Notifier
+                an instance of Notifier class
+        """
+        self._notifier = notifier
+
     def _send_parts(self, src_path, key):
         """
         Uploads the file by partitioning the file into
@@ -168,7 +180,6 @@ class S3Con:
         parameters
             src_path: str
                 local path of the resource to be sent
-
             key: str
                 the mapped path of the local file on
                 the remote storage
@@ -218,17 +229,13 @@ class S3Con:
         parameters
             src_path: str
                 local path of the resource to be sent
-
             key: str
                 the mapped path of the local file on
                 the remote storage
-
             _upload_id: str
                 multipart upload id for the upload
-
             _part_id: int
                 the id of the part being uploaded
-
             _lock: Lock
                 grants exclusive write access to the
                 thread for writing to the 'shelve'
@@ -246,7 +253,7 @@ class S3Con:
                       Body=part, Bucket=self._bucket_name, Key=key,
                       UploadId=_upload_id, PartNumber=part_id)
 
-        self._mark_part(part_id, _lock, result)
+        self._mark_part(src_path, part_id, _lock, result)
 
     def _load_parts(self, src_path, key):
         """
@@ -256,7 +263,6 @@ class S3Con:
         parameters
             src_path: str
                 local path of the resource to be sent
-
             key: str
                 the mapped path of the local file on
                 the remote storage
@@ -280,37 +286,37 @@ class S3Con:
 
         return self._xparts[UPLOAD_ID]
 
-    def _mark_part(self, part_id, _lock, result):
+    def _mark_part(src_path, self, part_id, _lock, result):
         """
         Marks the part as uploaded by removing
         it from the list of parts to be uploaded.
 
-        TODO: Send notification to the DB that a
-              part has been uploaded. -_-
-
         parameters
+            src_path: str
+                local path of the resource to be sent
             _part_id: int
                 the id of the part being uploaded
-
             _lock: Lock
                 grants exclusive write access to the thread
                 for writing to the 'shelve'
-
             result: dict
                 response of the aws-s3 of the uploaded part
         """
 
-        # NOTE: avoids deadlocks
+        # NOTE: avoid deadlocks when making changes
         # provides the thread with exclusive write access
         with _lock:
-            # sync only after noth changes have been written
             self._xparts[XPARTS].remove(part_id)
+
+            # exclusive write access to the remote DB
+            self._notifier._mark_part(src_path)
 
             self._xparts[PART_LIST][part_id - 1] = {"PartNumber": part_id,
                                                     "ETag": result["ETag"]}
+
+            # sync only after noth changes have been written
             self._xparts.sync()
         # logging.info('part_id={} uploaded.'.format(part_id))
-        # TODO schema changes, mark part to DB
         # uncomment for listing parts uploaded to the bucket
         logging.info(self._xparts[XPARTS])
 
