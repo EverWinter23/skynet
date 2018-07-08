@@ -4,6 +4,7 @@ Just Icon names here for system tray.
 '''
 
 # NOTE: Symmetry without trying ;-) 
+S3_BUCKET = 's3_bucket.svg'
 SKYNET_ICON = 'skynet.svg'
 UPLOAD_ICON = 'upload.svg'
 STOP_UPLOAD = 'stop_upload.svg'
