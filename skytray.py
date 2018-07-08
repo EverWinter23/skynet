@@ -7,8 +7,10 @@ import arg_actions
 from time import sleep
 import lib.logger as log
 from skynet import SkyNet
+import arg_actions
 from lib.trayicons import *
 from PyQt5.QtWidgets import *
+
 
 class Skytray(QMainWindow):
     def __init__(self):
@@ -33,7 +35,9 @@ class Skytray(QMainWindow):
         _start_action = QAction(getIcon(UPLOAD_ICON), 'Start Upload', self)
         #_start_action.triggered.connect(self._skynet._start_execution)
 
-        _edit_config = QAction(getIcon(EDIT_CONFIG), 'Edit Configuration', self)
+        _edit_config = QAction(getIcon(EDIT_CONFIG), 'Edit Config', self)
+        _edit_config.triggered.connect(self._edit_config)
+
         _stop_upload = QAction(getIcon(STOP_UPLOAD), 'Stop Upload', self)
         _show_status = QAction(getIcon(SHOW_STATUS), 'Show Status', self)
         _sync_folder = QAction(getIcon(SYNC_FOLDER), 'Skynet Folder', self)
@@ -64,6 +68,17 @@ class Skytray(QMainWindow):
     def _start(self):
         pass
 
+    def _edit_config(self):
+        filepath = arg_actions.FILE_PATH
+        
+        import subprocess, sys
+        # platform independent Windows, Mac, Linux
+        if sys.platform.startswith('darwin'):
+            subprocess.call(('open', filepath))
+        elif os.name == 'nt':
+            os.startfile(filepath)
+        elif os.name == 'posix':
+            subprocess.call(('xdg-open', filepath))
 
 if __name__ == "__main__":
     import sys
