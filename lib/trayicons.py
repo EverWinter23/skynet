@@ -18,6 +18,7 @@ SYNC_FOLDER = 'SYNC_FOLDER'
 DEBUG_ERROR = 'DEBUG_ERROR'
 SFTP_SERVER = 'SFTP_SERVER'
 EXIT_SKYNET = 'EXIT_SKYNET'
+RELOAD_ICON = 'RELOAD_ICON'
 
 # NOTE: Symmetry without trying ;-)
 ICONS = {S3_BUCKET: 's3_bucket.svg',
@@ -30,6 +31,7 @@ ICONS = {S3_BUCKET: 's3_bucket.svg',
          DEBUG_ERROR: 'debug_error.svg',
          SFTP_SERVER: 'sftp_server.svg',
          EXIT_SKYNET: 'exit_skynet.svg',
+         RELOAD_ICON: 'reload.svg'
          }
 
 
