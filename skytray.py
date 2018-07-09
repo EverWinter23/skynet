@@ -74,16 +74,16 @@ class Skytray(QMainWindow):
         else:
             return True
         
-    def _update_menu(self):
+    def _restart_skynet(self):
         if self._validate_config():
-            self._start_upload.setEnabled(True)
+            self._upload_action.setEnabled(True)
         else:
-            self._start_upload.setEnabled(False)
+            self._upload_action.setEnabled(False)
 
         if self._config_file is not None:
-            self._edit_config.setEnabled(True)
+            self._edit_action.setEnabled(True)
         else:
-            self._edit_config.setEnabled(False)        
+            self._edit_action.setEnabled(False)        
 
     def _build_menu(self):
         self._menu = QMenu('Skynet')
@@ -93,18 +93,17 @@ class Skytray(QMainWindow):
             self._config_file = skyconf.FILE_PATH
         
         # menu actions
-        self._quit_action = QAction(getIcon(EXIT_SKYNET), 'Exit', self)
+        self._quit_action = QAction(getIcon(EXIT_SKYNET), 'Exit Skynet', self)
         self._quit_action.triggered.connect(qApp.quit)
 
-        self._restart_skynet = QAction('Restart' ,self)
-        self._restart_skynet.triggered.connect(self._update_menu)
+        self._restart_action = QAction('Restart' ,self)
+        self._restart_action.triggered.connect(self._restart_skynet)
 
-        self._start_upload = QAction(getIcon(UPLOAD_ICON), 'Start Upload', self)
-        self._start_upload.triggered.connect(self.dummy)
-        
-            
-        self._edit_config = QAction(getIcon(EDIT_CONFIG), 'Edit Config', self)
-        self._edit_config.triggered.connect(self._edit_config)
+        self._upload_action = QAction(getIcon(UPLOAD_ICON), 'Start Upload', self)
+        self._upload_action.triggered.connect(self.dummy)
+                    
+        self._edit_action = QAction(getIcon(EDIT_CONFIG), 'Edit Config', self)
+        self._edit_action.triggered.connect(self._edit_config)
         
         '''
 
@@ -121,18 +120,18 @@ class Skytray(QMainWindow):
         #_edit_config = QAction(getIcon(EDIT_CONFIG), 'Config', self)
         
         #_menu.addAction(_open_folder)
-        self._menu.addAction(self._start_upload)
+        self._menu.addAction(self._upload_action)
         #_menu.addAction(_show_status)
-        self._menu.addAction(self._edit_config)
+        self._menu.addAction(self._edit_action)
         #_menu.addAction(_debug_error)
-        self._menu.addAction(self._restart_skynet)
+        self._menu.addAction(self._restart_action)
         self._menu.addAction(self._quit_action)
 
-        self._menu.insertSeparator(self._edit_config)
+        self._menu.insertSeparator(self._edit_action)
         self._menu.insertSeparator(self._restart_action)
         
         # validate actions
-        self._update_menu()
+        self._restart_skynet()
         
     def dummy(self):
         print('dummy')
