@@ -14,6 +14,8 @@ SKYNET = 'skynet'
 VERSION = '1.5'
 # name of config file
 CONFIG_FILE = 'config.ini'
+LOG_FILE = 'skynet.log'
+
 HOME = str(Path.home())
 
 # TODO: for now, later will change the dir path
@@ -27,6 +29,7 @@ DB_PATH = os.path.join(DIR_PATH, SKYNET_DB)
 # should work for both windows as well as linux, hopefully ;-)
 FILE_PATH = os.path.join(DIR_PATH, CONFIG_FILE)
 
+LOG_PATH = os.path.join(DIR_PATH, LOG_FILE)
 # NOTE: Enter string literals for all services here
 SFTP, S3 = 'SFTP', 'S3'
 SERVICES = [SFTP, S3]
