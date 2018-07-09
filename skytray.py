@@ -16,15 +16,19 @@ import sys
 import os
 from pathlib import Path
 
+# string literals
+START_UPLOADING, STOP_UPLOADING = 'Start Uploading', 'Stop Uploading'
+
+
 
 class Skytray(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
 
         self._dir_path = skyconf.DIR_PATH
+        self._sync_dir = None
         self._config_file = None
         self._default_service = None
-        self._sync_dir = None
 
         # create process entry in the system tray
         self._tray = QSystemTrayIcon(self)
@@ -116,9 +120,8 @@ class Skytray(QMainWindow):
         self._restart_action.triggered.connect(self._restart_skynet)
 
         self._upload_action = QAction(getIcon(UPLOAD_ICON),
-                                      'Start Upload', self)
-        
-        self._upload_action.triggered.connect(self.dummy)
+                                      START_UPLOADING, self)        
+        self._upload_action.triggered.connect(self._upload_start_stop)
 
         self._edit_action = QAction(getIcon(EDIT_CONFIG), 
                                             'Edit Config', self)
@@ -151,9 +154,22 @@ class Skytray(QMainWindow):
         # validate actions
         self._restart_skynet()
 
-    def dummy(self):
-        print('dummy')
+    def _upload_start_stop(self):
+        if self._upload_action.text() == START_UPLOADING:
+            self._upload_action.setText(STOP_UPLOADING)
+            self._upload_action.setIcon(getIcon(STOP_UPLOAD))
+            self._upload_start()
+        else:
+            self._upload_action.setText(START_UPLOADING)
+            self._upload_action.setIcon(getIcon(UPLOAD_ICON))
+            self._upload_stop()
 
+    def _upload_start(self):
+        print('Started Uploading')
+
+    def _upload_stop(self):
+        print('Stopped Uploading')
+        
     def _edit_config(self):
         self._open_path(self._config_file)
 
