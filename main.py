@@ -59,6 +59,7 @@ def main():
     skynet = SkyNet(config=skyconf._get_config(),
                     service=args.run_with,
                     db_path=skyconf.DB_PATH)
+    skynet._start_execution()
 
     try:
         while True:
