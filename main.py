@@ -18,7 +18,8 @@ def main():
     args = parser.parse_args()
 
     # setup logging
-    logger = log.get_logger(log.lvl_mapping[args.loglvl])
+    logger = log.get_logger(skyconf.DIR_PATH,
+                            log.lvl_mapping[args.loglvl])
 
     if args.version:
         skyconf._version()
