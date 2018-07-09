@@ -19,18 +19,24 @@ DEBUG_ERROR = 'DEBUG_ERROR'
 SFTP_SERVER = 'SFTP_SERVER'
 EXIT_SKYNET = 'EXIT_SKYNET'
 
-# NOTE: Symmetry without trying ;-) 
-ICONS = {S3_BUCKET : 's3_bucket.svg',
-         SKYNET_ICON : 'skynet.svg',
-         UPLOAD_ICON : 'upload.svg',
-         STOP_UPLOAD : 'stop_upload.svg',
-         EDIT_CONFIG : 'edit_config.svg',
-         SHOW_STATUS : 'show_status.svg',
-         SYNC_FOLDER : 'sync_folder.svg',
-         DEBUG_ERROR : 'debug_error.svg',
-         SFTP_SERVER : 'sftp_server.svg',
-         EXIT_SKYNET : 'exit_skynet.svg',
-        }
+# NOTE: Symmetry without trying ;-)
+ICONS = {S3_BUCKET: 's3_bucket.svg',
+         SKYNET_ICON: 'skynet.svg',
+         UPLOAD_ICON: 'upload.svg',
+         STOP_UPLOAD: 'stop_upload.svg',
+         EDIT_CONFIG: 'edit_config.svg',
+         SHOW_STATUS: 'show_status.svg',
+         SYNC_FOLDER: 'sync_folder.svg',
+         DEBUG_ERROR: 'debug_error.svg',
+         SFTP_SERVER: 'sftp_server.svg',
+         EXIT_SKYNET: 'exit_skynet.svg',
+         }
+
 
 def getIcon(key):
+    """
+    parameters
+        key: str
+            any name in ICONS
+    """
     return QIcon(os.path.join(ICON_DIR, ICONS[key]))
