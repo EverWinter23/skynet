@@ -24,6 +24,7 @@ class Skytray(QMainWindow):
         self._dir_path = skyconf.DIR_PATH
         self._config_file = None
         self._default_service = None
+        self._sync_dir = None
 
         # create process entry in the system tray
         self._tray = QSystemTrayIcon(self)
@@ -61,18 +62,26 @@ class Skytray(QMainWindow):
             self._config_file = None
             return False
 
-        # parse config for remote storage service
-        from configparser import ConfigParser
-        _config = ConfigParser(allow_no_value=True)
-        _config.read(self._config_file)
+        # parse config for remote storage service, and sync dir
+        try:
+            from configparser import ConfigParser
+            _config = ConfigParser(allow_no_value=True)
+            _config.read(self._config_file)
 
-        for service in skyconf.SERVICES:
-            if service in _config:
-                self._default_service = service
-                break
+            for service in skyconf.SERVICES:
+                if service in _config:
+                    self._default_service = service
+        
+            self._sync_dir = os.path.join(_config['SYNC']['local_root'],
+                                          _config['SYNC']['local_dir'])
+            
+        except Exception as error:
+            self._logger.info('Improper Config. Could not parse config file.')
+            self._logger.error('Cause: {}'.format(error))
+            return False
 
         if self._default_service is None:
-            self._logger.info('No service configured.')
+            self._logger.info('Improper Config. No service configured.')
             return False
         else:
             return True
@@ -128,7 +137,7 @@ class Skytray(QMainWindow):
         # TODO _debug_error = QAction(getIcon(DEBUG_ERROR),
         #                             'Debug Errors', self)
         
-        _menu.addAction(self._open_folder)
+        self._menu.addAction(self._open_folder)
         self._menu.addAction(self._upload_action)
         # _menu.addAction(_show_status)
         self._menu.addAction(self._edit_action)
@@ -149,10 +158,10 @@ class Skytray(QMainWindow):
         self._open_path(self._config_file)
 
     def _open_skynetdir(self):
-        self._open_path(self._dir_path))
+        self._open_path(self._sync_dir)
 
     def _open_path(self, path):
-       if sys.platform.startswith('darwin'):
+        if sys.platform.startswith('darwin'):
             subprocess.call(('open', path))
         elif os.name == 'nt':
             os.startfile(path)
