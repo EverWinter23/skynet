@@ -20,12 +20,12 @@ from pathlib import Path
 START_UPLOADING, STOP_UPLOADING = 'Start Uploading', 'Stop Uploading'
 
 
-
 class Skytray(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
 
         self._dir_path = skyconf.DIR_PATH
+        self._log_file = skyconf.LOG_PATH
         self._sync_dir = None
         self._config_file = None
         self._default_service = None
@@ -75,10 +75,10 @@ class Skytray(QMainWindow):
             for service in skyconf.SERVICES:
                 if service in _config:
                     self._default_service = service
-        
+
             self._sync_dir = os.path.join(_config['SYNC']['local_root'],
                                           _config['SYNC']['local_dir'])
-            
+
         except Exception as error:
             self._logger.info('Improper Config. Could not parse config file.')
             self._logger.error('Cause: {}'.format(error))
@@ -103,7 +103,6 @@ class Skytray(QMainWindow):
         else:
             self._edit_action.setEnabled(False)
 
-
     def _build_menu(self):
         self._menu = QMenu('Skynet')
 
@@ -112,39 +111,38 @@ class Skytray(QMainWindow):
             self._config_file = skyconf.FILE_PATH
 
         # menu actions
-        self._quit_action = QAction(getIcon(EXIT_SKYNET), 
+        self._quit_action = QAction(getIcon(EXIT_SKYNET),
                                     'Exit Skynet', self)
         self._quit_action.triggered.connect(qApp.quit)
 
-        self._restart_action = QAction('Restart', self)
+        self._restart_action = QAction(getIcon(RELOAD_ICON),
+                                       'Restart', self)
         self._restart_action.triggered.connect(self._restart_skynet)
 
         self._upload_action = QAction(getIcon(UPLOAD_ICON),
-                                      START_UPLOADING, self)        
+                                      START_UPLOADING, self)
         self._upload_action.triggered.connect(self._upload_start_stop)
 
-        self._edit_action = QAction(getIcon(EDIT_CONFIG), 
-                                            'Edit Config', self)
+        self._edit_action = QAction(getIcon(EDIT_CONFIG),
+                                    'Edit Config', self)
         self._edit_action.triggered.connect(self._edit_config)
 
         self._open_folder = QAction(getIcon(SYNC_FOLDER),
-                                            'Skynet Folder', self)
+                                    'Skynet Folder', self)
         self._open_folder.triggered.connect(self._open_skynetdir)
 
-        # TODO :_stop_upload = QAction(getIcon(STOP_UPLOAD), 
-        #                              'Stop Upload', self)
-
-        # TODO: _show_status = QAction(getIcon(SHOW_STATUS), 
+        # TODO: _show_status = QAction(getIcon(SHOW_STATUS),
         #                              'Show Status', self)
 
-        # TODO _debug_error = QAction(getIcon(DEBUG_ERROR),
-        #                             'Debug Errors', self)
-        
+        self._debug_action = QAction(getIcon(DEBUG_ERROR),
+                                     'Debug Errors', self)
+        self._debug_action.triggered.connect(self._open_log)
+
         self._menu.addAction(self._open_folder)
         self._menu.addAction(self._upload_action)
         # _menu.addAction(_show_status)
         self._menu.addAction(self._edit_action)
-        # _menu.addAction(_debug_error)
+        self._menu.addAction(self._debug_action)
         self._menu.addAction(self._restart_action)
         self._menu.addAction(self._quit_action)
 
@@ -169,12 +167,16 @@ class Skytray(QMainWindow):
 
     def _upload_stop(self):
         print('Stopped Uploading')
-        
+
     def _edit_config(self):
         self._open_path(self._config_file)
 
     def _open_skynetdir(self):
         self._open_path(self._sync_dir)
+
+    def _open_log(self):
+        print(self._log_file)
+        self._open_path(self._log_file)
 
     def _open_path(self, path):
         if sys.platform.startswith('darwin'):
