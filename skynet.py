@@ -280,7 +280,7 @@ class SkyNet(Thread):
     def _service_shutdown(self, signum, frame):
         logging.info('Caught Signal: {}'.format(signum))
         self._thread_observer_.stop()
-        logging.info('Hanler Stopped.')
+        logging.info('Handler Stopped.')
         logging.info('Notifier Stopped.')
         logging.info('Observer Stopped.')
 
