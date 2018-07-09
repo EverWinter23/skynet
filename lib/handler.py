@@ -2,6 +2,7 @@
 3rd june 2018 friday
 '''
 
+from threading import Event
 from threading import Thread
 import logging
 from time import sleep
@@ -70,6 +71,7 @@ class Handler(Thread):
 
         logging.info('Init. Notifier')
         self._thread_notifier_ = Notifier(db_path=self._db_path)
+        self._thread_notifier_.setDaemon(True)
         logging.info('Initialized Notifier')
 
         # only set the notifier if the SERVICE supports
@@ -193,7 +195,7 @@ class Handler(Thread):
                 self._update_status()
                 return
 
-
+   
 def main():
     pass
 
