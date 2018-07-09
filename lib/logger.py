@@ -1,7 +1,8 @@
 '''
 31st may 2018 thursday
 '''
-
+import os
+import errno
 import logging
 
 lvl_mapping = {
@@ -13,18 +14,27 @@ lvl_mapping = {
     'NOTSET': logging.NOTSET,
 }
 
-# setup logging
-"""
-    parameters:
-        level
-            sets the logging level of the logger, logging messages
-            which are less severe than level will be ignored.
-"""
 
+def get_logger(dirpath, level=logging.INFO):
+    """
+        parameters:
+            level: str
+                sets the logging level of the logger, logging messages
+                which are less severe than level will be ignored.
+            dirpath: str
+                path to the directory where config and database
+                is stored.
+    """
+    # make sure path exists
+    try:
+        os.makedirs(dirpath)
+    except OSError as error:
+        if error.errno == errno.EEXIST and os.path.isdir(dirpath):
+            pass
 
-def get_logger(level=logging.INFO):
+    filepath = os.path.join(dirpath, 'skynet.log')
     logFormat = '[%(levelname)s %(filename)s %(lineno)d]: %(message)s'
-    logging.basicConfig(filename='skynet.log', level=level,
+    logging.basicConfig(filename=filepath, level=level,
                         filemode='w', format=logFormat)
 
     return logging.getLogger('skynet')
