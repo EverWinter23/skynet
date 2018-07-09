@@ -7,6 +7,8 @@ import logging
 from time import sleep
 from pathlib import Path
 from lib.s3con import S3Con
+from threading import Event
+from threading import Thread
 from lib.mapper import Mapper
 from datetime import datetime
 from lib.sftpcon import SFTPCon
@@ -22,7 +24,7 @@ SFTP, S3, SYNC = 'SFTP', 'S3', 'SYNC'
 SERVICES = [SFTP, S3]
 
 
-class SkyNet:
+class SkyNet(Thread):
     """
     parameters
         config_path: str
@@ -30,7 +32,9 @@ class SkyNet:
 
         service: str
             remote storage service, supported services
-            are S3, SFTP
+            are S3, SFTP    skynet = SkyNet(config=skyconf._get_config(),
+                    service=args.run_with,
+                    db_path=skyconf.DB_PATH)
 
         db_path: str
             path to the database where actions are
@@ -38,6 +42,12 @@ class SkyNet:
     """
 
     def __init__(self, config, service, db_path):
+        Thread.__init__(self)
+
+        # the shutdown_flag is a threading.Event object that
+        # indicates whether the thread should be terminated.
+        self._shutdown_flag = Event()
+
         # get the configuration from the config file
         self.config = ConfigParser(allow_no_value=True)
         self.config.read(config)
@@ -101,8 +111,9 @@ class SkyNet:
         # connection to storage service
         self._con_service = None
 
-        # start the daemon
-        logging.info('Daemon started.')
+        # self._start_execution()
+
+    def run(self):
         self._start_execution()
 
     def _first_run(self):
@@ -116,25 +127,29 @@ class SkyNet:
         TODO: Add desc
         """
         logging.info('Stopping _thread_observer_')
-        self._thread_observer_.stop()
+        # self._thread_observer_.stop()
 
         if self._thread_handler_ is not None:
             logging.info('Stopping _thread_handler_')
-            self._thread_handler_.stop()
+            #self._thread_handler_.stop()
+            logging.info('Stopped _thread_handler_')
 
-        logging.info('Waiting for threads to join in.')
-        self._thread_observer_.join()
+        logging.info('Waiting for _thread_handler_ to join in.')
+        # self._thread_observer_.join()
         self._thread_handler_.join()
 
-        logging.info('Exiting gracefully.')
+        logging.info('Execution Paused.')
 
     def _start_execution(self):
         """
         TODO: Add desc
         """
+        # start the daemon
+        logging.info('Daemon started.')
+        
         # while conn exists
         # TODO: Add control flow desc --also we're looping too much
-        while True:
+        while not self._shutdown_flag.is_set():
             if self._thread_handler_._is_running is False:
                 # dynamic configuration --guard against conn drop, re-estd conn
                 self._con_service = self._get_connection()
@@ -142,13 +157,15 @@ class SkyNet:
 
                 self._thread_handler_ = Handler(mapper=self.mapper,
                                                 db_path=self.db_path)
-                # init handler --to execute actions recorded by the watcher
-                logging.info('Notifying _thread_handler_ of the connection.')
-                self._thread_handler_._schedule(con=self._con_service)
-                logging.info('Actions for handler have been shceduled.')
-
+                self._thread_handler_.setDaemon(True)
                 # try-catch seems redundant
                 try:
+                    # init handler --to execute actions recorded by the watcher
+                    logging.info(
+                        'Notifying _thread_handler_ of the connection.')
+                    self._thread_handler_._schedule(con=self._con_service)
+                    logging.info('Actions for handler have been shceduled.')
+
                     logging.info('Starting _thread_handler_')
                     self._thread_handler_.start()
                     logging.info('Started _thread_handler_')
@@ -160,9 +177,9 @@ class SkyNet:
                     logging.info('The scheduled actions have been paused.')
             else:
                 logging.info('_exec slept->{}'.format(datetime.now()))
-                sleep(60)  # if we have a handler --sleep for 5 minutes
+                sleep(5)  # if we have a handler --sleep for 5 minutes
                 logging.info('_exec got up->{}'.format(datetime.now()))
-
+                
     def _get_connection(self):
         """
         TODO: Add desc
@@ -259,3 +276,23 @@ class SkyNet:
                       local_dir=self.config[SYNC]['local_dir'],
                       remote_root=self.config[SYNC]['remote_root'],
                       remote_dir=self.config[SYNC]['remote_dir'])
+    
+    def _service_shutdown(self, signum, frame):
+        logging.info('Caught Signal: {}'.format(signum))
+        self._thread_observer_.stop()
+        logging.info('Hanler Stopped.')
+        logging.info('Notifier Stopped.')
+        logging.info('Observer Stopped.')
+
+        raise SkyNetServiceExit
+        
+
+class SkyNetServiceExit(Exception):
+    """
+    Custom exception which is used to trigger the clean exit
+    of all running threads and skynet.
+    """
+    pass
+ 
+
+    
