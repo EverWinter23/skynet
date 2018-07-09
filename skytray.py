@@ -2,19 +2,20 @@
 7th july 2018 saturday
 background process as tray
 '''
-
+import os
+import sys
+import signal
 import skyconf
+import subprocess
+import webbrowser
 from time import sleep
 import lib.logger as log
+from pathlib import Path
 from skynet import SkyNet
-import skyconf
+from skynet import SkyNetServiceExit
 from lib.trayicons import *
 from PyQt5.QtWidgets import *
 
-import subprocess
-import sys
-import os
-from pathlib import Path
 
 # string literals
 START_UPLOADING, STOP_UPLOADING = 'Start Uploading', 'Stop Uploading'
@@ -38,15 +39,9 @@ class Skytray(QMainWindow):
                                       log.lvl_mapping['INFO'])
         self._logger.info('Logger Intialized.')
 
-        # setup skynet <-- Later
-        '''
-        self._skynet = SkyNet(config=skyconf.FILE_PATH,
-                              service='SFTP',
-                              db_path=skyconf.DB_PATH)
-        '''
+        # setup skynet        
+        self._thread_skynet_ = None        
         self._build_menu()
-
-        # build menu and add actions to it
 
         self._tray.setContextMenu(self._menu)
         self._tray.setVisible(True)
@@ -83,7 +78,13 @@ class Skytray(QMainWindow):
             self._logger.info('Improper Config. Could not parse config file.')
             self._logger.error('Cause: {}'.format(error))
             return False
-
+        # '''    
+        self._thread_skynet_ = SkyNet(config=self._config_file,
+                                      service=self._default_service,
+                                      db_path=skyconf.DB_PATH)
+        signal.signal(signal.SIGINT, self._thread_skynet_._service_shutdown)
+        # '''
+            
         if self._default_service is None:
             self._logger.info('Improper Config. No service configured.')
             return False
@@ -131,16 +132,18 @@ class Skytray(QMainWindow):
                                     'Skynet Folder', self)
         self._open_folder.triggered.connect(self._open_skynetdir)
 
-        # TODO: _show_status = QAction(getIcon(SHOW_STATUS),
-        #                              'Show Status', self)
+        self._status_action = QAction(getIcon(SHOW_STATUS),
+                                    'Show Progress', self)
+        self._status_action.triggered.connect(self._open_website)
 
         self._debug_action = QAction(getIcon(DEBUG_ERROR),
                                      'Debug Errors', self)
         self._debug_action.triggered.connect(self._open_log)
 
+        # build menu and add actions to it
         self._menu.addAction(self._open_folder)
         self._menu.addAction(self._upload_action)
-        # _menu.addAction(_show_status)
+        self._menu.addAction(self._status_action)
         self._menu.addAction(self._edit_action)
         self._menu.addAction(self._debug_action)
         self._menu.addAction(self._restart_action)
@@ -163,11 +166,25 @@ class Skytray(QMainWindow):
             self._upload_stop()
 
     def _upload_start(self):
-        print('Started Uploading')
+        #print('Started Uploading')
+        #try:
+        self._thread_skynet_.start()
+        #except SkyNetServiceExit as service_exit:
+        #    self._logger.info('Skynet Stopped.')
 
     def _upload_stop(self):
-        print('Stopped Uploading')
+        #print('Stopped Uploading')
+        try:
+            # signal skynet to stop
+            self._thread_skynet_._service_shutdown(signal.SIGINT, None)
 
+            # signal all other threads spawned by skynet to stop
+            self._thread_skynet_._service_shutdown(signal.SIGINT, None)
+        except SkyNetServiceExit as service_exit:
+            self._thread_skynet_._shutdown_flag.set()
+            self._logger.info('SkyNet Stopped.')
+
+        
     def _edit_config(self):
         self._open_path(self._config_file)
 
@@ -177,6 +194,12 @@ class Skytray(QMainWindow):
     def _open_log(self):
         print(self._log_file)
         self._open_path(self._log_file)
+
+    def _open_website(self):
+        self._open_path(skyconf.WEBSITE_URL)
+        # print(skyconf.WEBSITE_URL)
+        
+        # webbrowser.open(skyconf.WEBSITE_URL)
 
     def _open_path(self, path):
         if sys.platform.startswith('darwin'):
