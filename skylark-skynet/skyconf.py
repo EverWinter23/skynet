@@ -10,8 +10,8 @@ from printmsgs import *
 
 # any changes to the version made here
 SKYNET = 'skynet'
-# TODO: Always mark version --1.5 marks resumable multipart uploads
-VERSION = '1.5'
+# TODO: Always mark version --1.6 marks skytray
+VERSION = '1.6'
 # name of config file
 CONFIG_FILE = 'config.ini'
 LOG_FILE = 'skynet.log'
