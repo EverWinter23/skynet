@@ -4,10 +4,12 @@
 import os
 import shelve
 import logging
-from . import queries
 import psycopg2
 from threading import Thread
 from persistqueue import UniqueQ as Q
+
+# pckg imports
+from . import queries
 
 # read database connection url from the env variable
 DATABASE_URL = os.environ.get('DATABASE_URL')
