@@ -6,7 +6,6 @@ import os
 import sys
 import signal
 import subprocess
-import webbrowser
 from time import sleep
 from pathlib import Path
 from PyQt5.QtWidgets import *
@@ -95,9 +94,11 @@ class Skytray(QMainWindow):
     def _restart_skynet(self):
         if self._validate_config():
             self._open_folder.setEnabled(True)
+            self._erase_action.setEnabled(True)
             self._upload_action.setEnabled(True)
         else:
             self._open_folder.setEnabled(False)
+            self._erase_action.setEnabled(False)
             self._upload_action.setEnabled(False)
 
         if self._config_file is not None:
@@ -141,17 +142,22 @@ class Skytray(QMainWindow):
                                      'Debug Errors', self)
         self._debug_action.triggered.connect(self._open_log)
 
+        self._erase_action = QAction(getIcon(ERASER_ICON),
+                                     'Erase DB', self)
+        self._erase_action.triggered.connect(self._erase_db)
+
         # build menu and add actions to it
         self._menu.addAction(self._open_folder)
         self._menu.addAction(self._upload_action)
         self._menu.addAction(self._status_action)
         self._menu.addAction(self._edit_action)
         self._menu.addAction(self._debug_action)
+        self._menu.addAction(self._erase_action)
         self._menu.addAction(self._restart_action)
         self._menu.addAction(self._quit_action)
 
         self._menu.insertSeparator(self._edit_action)
-        self._menu.insertSeparator(self._restart_action)
+        self._menu.insertSeparator(self._erase_action)
 
         # validate actions
         self._restart_skynet()
@@ -192,9 +198,16 @@ class Skytray(QMainWindow):
 
     def _open_website(self):
         self._open_path(skyconf.WEBSITE_URL)
-        # print(skyconf.WEBSITE_URL)
 
-        # webbrowser.open(skyconf.WEBSITE_URL)
+    def _erase_db(self):
+        import shutil
+        try:
+            self._logger.info('Deleting: {}'.format(skyconf.DB_PATH))
+            # shutil.rmtree(skyconf.DB_PATH)
+            os.remove(os.path.join(self._dir_path, 'xparts'))
+        except Exception as error:
+            self._logger.error('Cause: {}'.format(error))
+            self._logger.info('Cleaned the database.')
 
     def _open_path(self, path):
         if sys.platform.startswith('darwin'):
