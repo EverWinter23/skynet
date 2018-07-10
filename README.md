@@ -8,8 +8,13 @@ To test the module out from testpypi, you can use:
       $ skynet --help
       $ skytray
 
-**NOTE:** Use a virtual environment. Become a stargazer for future updates.
+**WARNING** skywatch pckg needed for sending notifications is in under development, to
+use it without a Notifier, remove all Notifier references from the Handler. Test it out
+on localhost(SFTP) using this example [config](/config.ini).
 
+    $ sudo apt-get install openssh-server
+
+**NOTE:** Use a virtual environment. Become a stargazer for future updates.
 <img align="right" width="450" height="270" src="screenshots/skytray.png">
 
 
