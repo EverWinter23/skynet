@@ -8,7 +8,7 @@ To test the module out from testpypi, you can use:
       $ skynet --help
       $ skytray
 
-**WARNING** skywatch pckg needed for sending notifications is in under development, to
+**WARNING** skywatch pckg needed for sending notifications is under development, to
 use it without a Notifier, remove all Notifier references from the Handler. Test it out
 on localhost(SFTP) using this example [config](/config.ini).
 
