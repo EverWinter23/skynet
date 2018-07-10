@@ -4,9 +4,12 @@ Just Icon names here for system tray.
 '''
 # for os independent paths
 import os
+from pathlib import Path
 from PyQt5.QtGui import QIcon
-
-ICON_DIR = 'icons'
+# NOTE: Here be dragons.
+ICON_DIR = 's3kynet.icons'
+# Ignore PyCodeStyleBear
+from pkg_resources import resource_filename
 # string literals for ease
 S3_BUCKET = 'S3_BUCKET'
 SKYNET_ICON = 'SKYNET_ICON'
@@ -41,4 +44,4 @@ def getIcon(key):
         key: str
             any name in ICONS
     """
-    return QIcon(os.path.join(ICON_DIR, ICONS[key]))
+    return QIcon(os.path.abspath(resource_filename(ICON_DIR, ICONS[key])))
