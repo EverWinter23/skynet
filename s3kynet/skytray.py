@@ -5,17 +5,18 @@ background process as tray
 import os
 import sys
 import signal
-import skyconf
 import subprocess
 import webbrowser
 from time import sleep
-import lib.logger as log
 from pathlib import Path
-from skynet import SkyNet
-from skynet import SkyNetServiceExit
-from lib.trayicons import *
 from PyQt5.QtWidgets import *
 
+# pckg imports
+from . import skyconf
+from .skynet import SkyNet
+from .skylib.trayicons import *
+from .skylib import logger as log
+from .skynet import SkyNetServiceExit
 
 # string literals
 START_UPLOADING, STOP_UPLOADING = 'Start Uploading', 'Stop Uploading'
@@ -39,8 +40,8 @@ class Skytray(QMainWindow):
                                       log.lvl_mapping['INFO'])
         self._logger.info('Logger Intialized.')
 
-        # setup skynet        
-        self._thread_skynet_ = None        
+        # setup skynet
+        self._thread_skynet_ = None
         self._build_menu()
 
         self._tray.setContextMenu(self._menu)
@@ -78,13 +79,13 @@ class Skytray(QMainWindow):
             self._logger.info('Improper Config. Could not parse config file.')
             self._logger.error('Cause: {}'.format(error))
             return False
-        # '''    
+        # '''
         self._thread_skynet_ = SkyNet(config=self._config_file,
                                       service=self._default_service,
                                       db_path=skyconf.DB_PATH)
         signal.signal(signal.SIGINT, self._thread_skynet_._service_shutdown)
         # '''
-            
+
         if self._default_service is None:
             self._logger.info('Improper Config. No service configured.')
             return False
@@ -133,7 +134,7 @@ class Skytray(QMainWindow):
         self._open_folder.triggered.connect(self._open_skynetdir)
 
         self._status_action = QAction(getIcon(SHOW_STATUS),
-                                    'Show Progress', self)
+                                      'Show Progress', self)
         self._status_action.triggered.connect(self._open_website)
 
         self._debug_action = QAction(getIcon(DEBUG_ERROR),
@@ -166,14 +167,9 @@ class Skytray(QMainWindow):
             self._upload_stop()
 
     def _upload_start(self):
-        #print('Started Uploading')
-        #try:
         self._thread_skynet_.start()
-        #except SkyNetServiceExit as service_exit:
-        #    self._logger.info('Skynet Stopped.')
 
     def _upload_stop(self):
-        #print('Stopped Uploading')
         try:
             # signal skynet to stop
             self._thread_skynet_._service_shutdown(signal.SIGINT, None)
@@ -184,7 +180,6 @@ class Skytray(QMainWindow):
             self._thread_skynet_._shutdown_flag.set()
             self._logger.info('SkyNet Stopped.')
 
-        
     def _edit_config(self):
         self._open_path(self._config_file)
 
@@ -198,7 +193,7 @@ class Skytray(QMainWindow):
     def _open_website(self):
         self._open_path(skyconf.WEBSITE_URL)
         # print(skyconf.WEBSITE_URL)
-        
+
         # webbrowser.open(skyconf.WEBSITE_URL)
 
     def _open_path(self, path):
@@ -210,8 +205,12 @@ class Skytray(QMainWindow):
             subprocess.call(('xdg-open', path))
 
 
-if __name__ == "__main__":
+def main():
     #  must construct a QGuiApplication before a QPixmap
     app = QApplication(sys.argv)
     mw = Skytray()
     app.exec()
+
+
+if __name__ == "__main__":
+    main()
