@@ -4,14 +4,17 @@
 
 import os
 import sys
-from configparser import ConfigParser
 from pathlib import Path
-from printmsgs import *
+from configparser import ConfigParser
+
+# pckg imports
+from .printmsgs import *
 
 # any changes to the version made here
 SKYNET = 'skynet'
-# TODO: Always mark version --1.6 marks skytray
-VERSION = '1.6'
+# TODO: Always mark version --reset for pypi first release
+# use 3-part semantic versioning --MAJOR.MINOR.MAINTENANCE numbering scheme
+VERSION = '1.0.0'
 # name of config file
 CONFIG_FILE = 'config.ini'
 LOG_FILE = 'skynet.log'
