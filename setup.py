@@ -9,7 +9,7 @@ from pathlib import Path
 SKYNET = 'skynet'
 SKYNET_HOME = os.path.join(str(Path.home()),
                            SKYNET)
-PCKG = 's3kynet'
+PCKG = 'skylarkskynet'
 ICONS = 'icons'
 ICON_DIR = os.path.join(PCKG, ICONS)
 
@@ -26,7 +26,7 @@ with open("README.md", "r") as desc:
     long_description = desc.read()
 
 setuptools.setup(
-    name="s3kynet",
+    name="skylark-skynet",
     version="1.0.0a1",          # TODO: marks --first alpha Release on pypi
     author="Rishabh Mehta",
     author_email="eternal.blizzard23@gmail.com",
@@ -39,7 +39,7 @@ setuptools.setup(
     license="Apache License 3.0",
     # include_package_data=True,
     package_data={
-        "s3kynet.icons": ICON_FILES,
+        "skylarkskynet.icons": ICON_FILES,
     },
 
     install_requires=[
