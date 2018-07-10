@@ -1,6 +1,15 @@
 # README
 
-**Preparing for first alpha release on pypi.** Sneak Peek.
+**Preparing for first alpha release on pypi.**
+
+To test the module out from testpypi, you can use:
+
+      $ pip install --index-url https://test.pypi.org/simple s3kynet --no-cache-dir --extra-index-url https://pypi.org/simple
+      $ skynet --help
+      $ skytray
+
+**NOTE:** Use a virtual environment. Become a stargazer for future updates.
+
 <img align="right" width="450" height="270" src="screenshots/skytray.png">
 
 
