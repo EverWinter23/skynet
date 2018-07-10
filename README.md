@@ -239,7 +239,7 @@ class XCon:
     pass
 ```
 
-+ The following represents a the checklist of cahnges that will need to be made:
++ The following represents a the checklist of changes that will need to be made:
   + [x] Add service to --run-with arg, and gen and writing config to config.ini file.
   + [x] A _get_x_con method to skynet.py, register it with _get_connection method.
 
