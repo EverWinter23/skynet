@@ -1,20 +1,8 @@
 # README
 
-**Preparing for first alpha release on pypi.**
+`skylark-skynet` combines together the services provided by `skynet` and integrates
+it with progress monitoring system --`skywatch`.
 
-To test the module out from testpypi, you can use:
-
-      $ pip install --index-url https://test.pypi.org/simple s3kynet --no-cache-dir --extra-index-url https://pypi.org/simple
-      $ skynet --help
-      $ skytray
-
-**WARNING** skywatch pckg needed for sending notifications is under development, to
-use it without a Notifier, remove all Notifier references from the Handler. Test it out
-on localhost(SFTP) using this example [config](/config.ini).
-
-    $ sudo apt-get install openssh-server
-
-**NOTE:** Use a virtual environment. Become a stargazer for future updates.
 <img align="right" width="450" height="270" src="screenshots/skytray.png">
 
 
@@ -55,18 +43,15 @@ on localhost(SFTP) using this example [config](/config.ini).
 + **Mapper** Maps a local path to the remote storage.
 
 
-## INSTALLATION and CONFIGRUATION
+## INSTALLATION and DEPLOYMENT
 
 The very first thing you need to do is cloning the repository and installing the required
 python-libraries. Make sure you're working with **PYTHON 3.6.**
 
-    $ git clone https://github.com/EverWinter23/skynet
-    $ cd skynet
-    $ pip install -r requirements.txt
+    $ pip install skylark-skynet
 
-Now, that you have installed the required python packages, you'll need to setup **skywatch**,
---the Django-app for monitoring progress remotely. This step's one's optional. If you don't
-want to do that you can just remove the Notifier instance param and you'll be good to go.
+Now, that you have installed the `skylark-skynet` python package, you'll need to setup
+ **skywatch**, --the Django-app for monitoring progress remotely.
 
 We'll host this app on Heroku with Heroku-Postgres for our Database and Django for the web
 framework.
@@ -81,7 +66,7 @@ the config file using any text editor.  **Refer to README.md, if you get stuck d
 Sync Configration, because mapping can be tricky.**  Other than that, it's pretty straight
 forward.
 
-    $ python main.py --config [SERVICE]
+    $ skynet --config [SERVICE]
 
 **NOTE:** You can aslo pass empty params, keep on pressing enter when you're done, go to the
 place where the config was saved and edit the config there.
