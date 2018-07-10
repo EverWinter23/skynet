@@ -2,14 +2,15 @@
 3rd june 2018 friday
 '''
 
-from threading import Event
-from threading import Thread
 import logging
 from time import sleep
-from .s3con import S3Con
-from .notifier import Notifier
+from threading import Event
+from threading import Thread
 from persistqueue import UniqueQ as Q
 
+# pckg imports
+from .s3con import S3Con
+from .notifier import Notifier
 
 # NOTE: We will duck the responsibility of handling exceptions, and
 #       will pass that responsibility to the module using this class,
@@ -195,7 +196,7 @@ class Handler(Thread):
                 self._update_status()
                 return
 
-   
+
 def main():
     pass
 
