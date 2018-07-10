@@ -1,6 +1,8 @@
 # README
 
-Work in Progress.
+**Preparing for first alpha release on pypi.** Sneak Peek.
+<img align="right" width="450" height="270" src="screenshots/skytray.png">
+
 
 ## SKYNET The Main Module
 
@@ -22,6 +24,8 @@ Work in Progress.
   file uploads from anywhere.
 + For any problems during execution, you can see the **skynet.log** file for debugging and
   figuring out exactly where things went wrong.
++ Skytray is here. Everything at the click of a button. See logs, delete database, view
+  progress, edit configurtion, open the directory being synced from one place. ^_^
 
 
 ### THE CORE
