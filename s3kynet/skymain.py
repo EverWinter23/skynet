@@ -5,10 +5,12 @@ command line interface
 
 import time
 import sys
-import lib.logger as log
-import skyconf
-from skynet import SkyNet
-from lib.parser import Parser
+
+# pckg imports
+from . import skyconf
+from .skynet import SkyNet
+from .skylib import logger as log
+from .skylib.parser import Parser
 
 
 def main():
