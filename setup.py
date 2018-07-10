@@ -70,11 +70,11 @@ setuptools.setup(
 
     entry_points={
         'console_scripts': [
-            'skynet=s3kynet.skymain:main',
+            'skynet=skylarkskynet.skymain:main',
         ],
 
         'gui_scripts': [
-                'skytray=s3kynet.skytray:main',
+                'skytray=skylarkskynet.skytray:main',
         ]
     },
 )

@@ -7,7 +7,7 @@ import os
 from pathlib import Path
 from PyQt5.QtGui import QIcon
 # NOTE: Here be dragons.
-ICON_DIR = 's3kynet.icons'
+ICON_DIR = 'skylarkskynet.icons'
 # Ignore PyCodeStyleBear
 from pkg_resources import resource_filename
 # string literals for ease
