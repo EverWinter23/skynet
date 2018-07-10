@@ -6,18 +6,19 @@ import sys
 import logging
 from time import sleep
 from pathlib import Path
-from lib.s3con import S3Con
 from threading import Event
 from threading import Thread
-from lib.mapper import Mapper
 from datetime import datetime
-from lib.sftpcon import SFTPCon
-from lib.watcher import Watcher
-from lib.handler import Handler
-from lib.syncsnap import SyncSnap
 from configparser import ConfigParser
 from watchdog.observers import Observer
-# from watchdog.utils.dirsnapshot import DirectorySnapshot
+
+# pckg imports
+from .skylib.s3con import S3Con
+from .skylib.mapper import Mapper
+from .skylib.sftpcon import SFTPCon
+from .skylib.watcher import Watcher
+from .skylib.handler import Handler
+from .skylib.syncsnap import SyncSnap
 
 # string literals for convenience --DO NOT REMOVE
 SFTP, S3, SYNC = 'SFTP', 'S3', 'SYNC'
@@ -131,7 +132,7 @@ class SkyNet(Thread):
 
         if self._thread_handler_ is not None:
             logging.info('Stopping _thread_handler_')
-            #self._thread_handler_.stop()
+            # self._thread_handler_.stop()
             logging.info('Stopped _thread_handler_')
 
         logging.info('Waiting for _thread_handler_ to join in.')
@@ -146,7 +147,7 @@ class SkyNet(Thread):
         """
         # start the daemon
         logging.info('Daemon started.')
-        
+
         # while conn exists
         # TODO: Add control flow desc --also we're looping too much
         while not self._shutdown_flag.is_set():
@@ -179,7 +180,7 @@ class SkyNet(Thread):
                 logging.info('_exec slept->{}'.format(datetime.now()))
                 sleep(5)  # if we have a handler --sleep for 5 minutes
                 logging.info('_exec got up->{}'.format(datetime.now()))
-                
+
     def _get_connection(self):
         """
         TODO: Add desc
@@ -276,7 +277,7 @@ class SkyNet(Thread):
                       local_dir=self.config[SYNC]['local_dir'],
                       remote_root=self.config[SYNC]['remote_root'],
                       remote_dir=self.config[SYNC]['remote_dir'])
-    
+
     def _service_shutdown(self, signum, frame):
         logging.info('Caught Signal: {}'.format(signum))
         self._thread_observer_.stop()
@@ -285,7 +286,7 @@ class SkyNet(Thread):
         logging.info('Observer Stopped.')
 
         raise SkyNetServiceExit
-        
+
 
 class SkyNetServiceExit(Exception):
     """
@@ -293,6 +294,3 @@ class SkyNetServiceExit(Exception):
     of all running threads and skynet.
     """
     pass
- 
-
-    
