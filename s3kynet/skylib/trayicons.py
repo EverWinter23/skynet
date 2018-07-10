@@ -12,6 +12,7 @@ ICON_DIR = 's3kynet.icons'
 from pkg_resources import resource_filename
 # string literals for ease
 S3_BUCKET = 'S3_BUCKET'
+ERASER_ICON = 'ERASER_ICON'
 SKYNET_ICON = 'SKYNET_ICON'
 UPLOAD_ICON = 'UPLOAD_ICON'
 STOP_UPLOAD = 'STOP_UPLOAD'
@@ -25,8 +26,10 @@ RELOAD_ICON = 'RELOAD_ICON'
 
 # NOTE: Symmetry without trying ;-)
 ICONS = {S3_BUCKET: 's3_bucket.svg',
+         RELOAD_ICON: 'reload.svg',
          SKYNET_ICON: 'skynet.svg',
          UPLOAD_ICON: 'upload.svg',
+         ERASER_ICON: 'eraser.svg',
          STOP_UPLOAD: 'stop_upload.svg',
          EDIT_CONFIG: 'edit_config.svg',
          SHOW_STATUS: 'show_status.svg',
@@ -34,7 +37,6 @@ ICONS = {S3_BUCKET: 's3_bucket.svg',
          DEBUG_ERROR: 'debug_error.svg',
          SFTP_SERVER: 'sftp_server.svg',
          EXIT_SKYNET: 'exit_skynet.svg',
-         RELOAD_ICON: 'reload.svg'
          }
 
 
