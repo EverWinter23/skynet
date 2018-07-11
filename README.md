@@ -73,10 +73,11 @@ place where the config was saved and edit the config there.
 
 All Done? Now, we're ready. Just execute the following command.
 
-    $ python main.py --run-with [SERVICE]
-    # If you want to stop it, hit cntrl + c, will add another way to do that later.
+    $ skytray
 
-
+You'll see a paper-plane icon where your system tray is located. If the configuration is
+invalid, some options maybe greyed out. You see the log for further details right from
+the tray and edit the config accordingly. 
 
 ## ACTION FileSystemEvent Actions
 
