@@ -144,11 +144,12 @@ class Skytray(QMainWindow):
         # build menu and add actions to it
         self._menu.addAction(self._open_folder)
         self._menu.addAction(self._upload_action)
-        self._menu.addAction(self._status_action)
-        self._menu.addAction(self._edit_action)
+        # NOTE: Useful for debugging
+        # self._menu.addAction(self._status_action)
+        # self._menu.addAction(self._edit_action)
         self._menu.addAction(self._debug_action)
-        self._menu.addAction(self._erase_action)
-        self._menu.addAction(self._restart_action)
+        # self._menu.addAction(self._erase_action)
+        # self._menu.addAction(self._restart_action)
         self._menu.addAction(self._quit_action)
 
         self._menu.insertSeparator(self._edit_action)
@@ -195,7 +196,7 @@ class Skytray(QMainWindow):
 
     def _edit_config(self):
         self._open_path(self._config_file)
-
+     
     def _open_skynetdir(self):
         self._open_path(self._sync_dir)
 
@@ -206,33 +207,27 @@ class Skytray(QMainWindow):
         self._open_path(skyconf.WEBSITE_URL)
 
     def _erase_db(self):
-        import shutil
-        # erase local database
-        if os.path.exists(skyconf.DB_PATH):
-            shutil.rmtree(skyconf.DB_PATH)
-            self._logger.info('Local database deleted.')
-
-        # remove multipart upload info
-        xparts = os.path.join(self._dir_path, 'xparts')
-        if os.path.exists(xparts):
-            os.remove(xparts)
-            self._logger.info('Mulitpart info deleted.')
-
+        # stop uploading first
+        if self._upload_action.text() == STOP_UPLOADING:
+            self._tray.showMessage('Skynet', 
+                       'Cannot erase database while uploading.')
+            return
+                
         # erase remote database, could throw connection error
         try:
             notifier = Notifier(db_path=skyconf.DB_PATH)
-            # notifier._clear_table()
+            notifier._clear_table()
             self._logger.info('Deleted Remote DB.')
         except Exception as error:
             self._logger.info('Could not delete remote DB.')
             self._logger.error('Cause: {}'.format(error))
+        
+        import shutil
+        # erase local database and all info stored within it
+        if os.path.exists(skyconf.DB_PATH):
+            shutil.rmtree(skyconf.DB_PATH)
+            self._logger.info('Local database deleted.')
 
-        # remove notification cursor, AFTER remote database
-        # because call to Notifier will result in cursor creation
-        notif_cursor = os.path.join(self._dir_path, 'notif_cursor')
-        if os.path.exists(notif_cursor):
-            os.remove(notif_cursor)
-            self._logger.info('Notification cursor deleted.')
 
     @staticmethod
     def _open_path(path):
