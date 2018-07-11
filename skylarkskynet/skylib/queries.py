@@ -9,8 +9,9 @@ INSERT_BASE = '''INSERT INTO "pynot_eventnotification" ("action",
  \'{}\', \'{}\', \'{}\', 0)
 '''
 
-UPDATE_BASE = '''UPDATE "pynot_eventnotification" SET "status"=\'{}\',
-"not_time"=\'{}\', "size"=\'{}\' WHERE "file" = \'{}\'
+UPDATE_BASE = '''UPDATE "pynot_eventnotification" SET "action"=\'{}\',
+"status"=\'{}\', "not_time"=\'{}\', "size"=\'{}\', "parts"=0 WHERE
+"file" = \'{}\'
 '''
 
 MARK_BASE = '''UPDATE "pynot_eventnotification" SET "status"=\'{}\',
@@ -36,8 +37,8 @@ def _new_notif(action, file, size):
                               PENDING, datetime.now())
 
 
-def _update_notif(file, size):
-    return UPDATE_BASE.format(PENDING, datetime.now(),
+def _update_notif(action, file, size):
+    return UPDATE_BASE.format(action, PENDING, datetime.now(),
                               size, file)
 
 
