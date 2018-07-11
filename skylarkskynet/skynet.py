@@ -180,7 +180,7 @@ class SkyNet(Thread):
                 logging.info('_exec slept->{}'.format(datetime.now()))
                 sleep(5)  # if we have a handler --sleep for 5 minutes
                 logging.info('_exec got up->{}'.format(datetime.now()))
-
+    
     def _get_connection(self):
         """
         TODO: Add desc
@@ -280,11 +280,18 @@ class SkyNet(Thread):
 
     def _service_shutdown(self, signum, frame):
         logging.info('Caught Signal: {}'.format(signum))
-        self._thread_observer_.stop()
+        
+        # NOTE: SkyNet keeps monitoring the directory for changes
+        # self._thread_observer_.stop()
+        # logging.info('Observer Stopped.')
+
+        # however, if it is set and _thread_handler_ is running
+        self._thread_handler_._is_running = False
         logging.info('Handler Stopped.')
         logging.info('Notifier Stopped.')
-        logging.info('Observer Stopped.')
+        
         self._shutdown_flag.set()
+        
         raise SkyNetServiceExit
 
 
