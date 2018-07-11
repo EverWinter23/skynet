@@ -135,7 +135,8 @@ class Handler(Thread):
         sleep(10)
 
         logging.info('The scheduled actions are executing.')
-        while True:
+        while self._is_running:
+            logging.info('========ISRUNING={}'.format(self._is_running))
             entry = self._q.get()
             logging.info('Marking PROCESSING:\'{}\''.format(entry['src_path']))
             self._thread_notifier_._mark_processing(entry)
