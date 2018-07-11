@@ -15,6 +15,7 @@ from . import skyconf
 from .skynet import SkyNet
 from .skylib.trayicons import *
 from .skylib import logger as log
+from .skylib.notifier import Notifier
 from .skynet import SkyNetServiceExit
 
 # string literals
@@ -78,12 +79,6 @@ class Skytray(QMainWindow):
             self._logger.info('Improper Config. Could not parse config file.')
             self._logger.error('Cause: {}'.format(error))
             return False
-        # '''
-        self._thread_skynet_ = SkyNet(config=self._config_file,
-                                      service=self._default_service,
-                                      db_path=skyconf.DB_PATH)
-        signal.signal(signal.SIGINT, self._thread_skynet_._service_shutdown)
-        # '''
 
         if self._default_service is None:
             self._logger.info('Improper Config. No service configured.')
@@ -173,7 +168,19 @@ class Skytray(QMainWindow):
             self._upload_stop()
 
     def _upload_start(self):
-        self._thread_skynet_.start()
+        try:
+            self._logger.info('Starting SkyNet.')
+            self._thread_skynet_ = SkyNet(config=self._config_file,
+                                          service=self._default_service,
+                                          db_path=skyconf.DB_PATH)
+            signal.signal(signal.SIGINT, self._thread_skynet_._service_shutdown)
+            self._thread_skynet_.start()
+        except Exception as error:
+            self._logger.info('Somewhere SkyNet failed. 0-0')
+            self._logger.error('Cause: {}'.format(error))
+            self._tray.showMessage('Skynet', str(error))
+            self._upload_action.setText(START_UPLOADING)
+            self._upload_action.setIcon(getIcon(UPLOAD_ICON))
 
     def _upload_stop(self):
         try:
@@ -193,7 +200,6 @@ class Skytray(QMainWindow):
         self._open_path(self._sync_dir)
 
     def _open_log(self):
-        print(self._log_file)
         self._open_path(self._log_file)
 
     def _open_website(self):
@@ -201,15 +207,35 @@ class Skytray(QMainWindow):
 
     def _erase_db(self):
         import shutil
-        try:
-            self._logger.info('Deleting: {}'.format(skyconf.DB_PATH))
-            # shutil.rmtree(skyconf.DB_PATH)
-            os.remove(os.path.join(self._dir_path, 'xparts'))
-        except Exception as error:
-            self._logger.error('Cause: {}'.format(error))
-            self._logger.info('Cleaned the database.')
+        # erase local database
+        if os.path.exists(skyconf.DB_PATH):
+            shutil.rmtree(skyconf.DB_PATH)
+            self._logger.info('Local database deleted.')
 
-    def _open_path(self, path):
+        # remove multipart upload info
+        xparts = os.path.join(self._dir_path, 'xparts')
+        if os.path.exists(xparts):
+            os.remove(xparts)
+            self._logger.info('Mulitpart info deleted.')
+
+        # erase remote database, could throw connection error
+        try:
+            notifier = Notifier(db_path=skyconf.DB_PATH)
+            # notifier._clear_table()
+            self._logger.info('Deleted Remote DB.')
+        except Exception as error:
+            self._logger.info('Could not delete remote DB.')
+            self._logger.error('Cause: {}'.format(error))
+
+        # remove notification cursor, AFTER remote database
+        # because call to Notifier will result in cursor creation
+        notif_cursor = os.path.join(self._dir_path, 'notif_cursor')
+        if os.path.exists(notif_cursor):
+            os.remove(notif_cursor)
+            self._logger.info('Notification cursor deleted.')
+
+    @staticmethod
+    def _open_path(path):
         if sys.platform.startswith('darwin'):
             subprocess.call(('open', path))
         elif os.name == 'nt':
