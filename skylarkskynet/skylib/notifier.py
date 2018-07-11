@@ -14,7 +14,7 @@ from . import queries
 # read database connection url from the env variable
 DATABASE_URL = os.environ.get('DATABASE_URL')
 CURSOR = 'cursor'
-CURSOR_FILE = 'do_not_remove'
+CURSOR_FILE = 'notif_cursor'
 
 
 class Notifier(Thread):
@@ -75,10 +75,16 @@ class Notifier(Thread):
 
                 logging.info(
                     'New Notification: \'{}\''.format(entry['src_path']))
+
             except psycopg2.IntegrityError as error:
+                logging.info('Error adding, cause:{}'.format(error))
                 logging.info('Notif exists, updating notif: \'{}\''.format(
                     entry['src_path'], os.stat(entry['src_path']).st_size))
-                cur.execute(queries._update_notif(entry['src_path']))
+
+                cur.execute(queries._update_notif(
+                    entry['action'], entry['src_path'],
+                    os.stat(entry['src_path']).st_size))
+
             self._increment_cursor()
 
     def _mark_complete(self, entry):
@@ -130,3 +136,10 @@ class Notifier(Thread):
         """
         self._cursor[CURSOR] -= 1
         self._cursor.sync()
+
+    def _clear_table(self):
+        """
+        Clear all entries in the table.
+        """
+        with self._con.cursor() as cursor:
+            cursor.execute(queries._truncate_table())
