@@ -44,11 +44,6 @@ class Mapper:
 
     def __init__(self, local_root, local_dir, remote_root, remote_dir):
         self.local_base = os.path.join(local_root, local_dir)
-
-        if not os.path.isdir(self.local_base):
-            logging.error("{} is not a vaild path.".format(self.local_base))
-            exit()
-
         self.remote_base = posixpath.join(remote_root, remote_dir)
 
         logging.info("local_base: {}".format(self.local_base))
