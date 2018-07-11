@@ -104,7 +104,7 @@ class SkyNet(Thread):
             sys.exit()
 
         # also need a handler to handle the actual transfers
-        self._thread_handler_ = Handler(mapper=self.mapper, db_path=db_path)
+        self._thread_handler_ = Handler(_mapper=self.mapper, db_path=db_path)
 
         # service type, one of the supported service
         self._service_type = service
@@ -156,7 +156,7 @@ class SkyNet(Thread):
                 self._con_service = self._get_connection()
                 logging.info('Connection Obtained.')
 
-                self._thread_handler_ = Handler(mapper=self.mapper,
+                self._thread_handler_ = Handler(_mapper=self.mapper,
                                                 db_path=self.db_path)
                 self._thread_handler_.setDaemon(True)
                 # try-catch seems redundant
@@ -284,7 +284,7 @@ class SkyNet(Thread):
         logging.info('Handler Stopped.')
         logging.info('Notifier Stopped.')
         logging.info('Observer Stopped.')
-
+        self._shutdown_flag.set()
         raise SkyNetServiceExit
 
 
