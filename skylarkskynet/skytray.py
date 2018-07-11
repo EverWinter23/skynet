@@ -111,7 +111,7 @@ class Skytray(QMainWindow):
         # menu actions
         self._quit_action = QAction(getIcon(EXIT_SKYNET),
                                     'Exit Skynet', self)
-        self._quit_action.triggered.connect(qApp.quit)
+        self._quit_action.triggered.connect(self._quit)
 
         self._restart_action = QAction(getIcon(RELOAD_ICON),
                                        'Restart', self)
@@ -242,6 +242,12 @@ class Skytray(QMainWindow):
             os.startfile(path)
         elif os.name == 'posix':
             subprocess.call(('xdg-open', path))
+
+    def _quit(self):
+        if self._upload_action.text() == STOP_UPLOADING:
+            self._upload_stop()
+        self._logger.info('Exiting.')
+        qApp.exit()
 
 
 def main():
