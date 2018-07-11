@@ -3,10 +3,10 @@
 '''
 from datetime import datetime
 
-# TODO: Change table name for every mapping or project
+# TODO: Change table name for every project
 INSERT_BASE = '''INSERT INTO "pynot_eventnotification" ("action",
-"file", "size", "status", "not_time") VALUES (\'{}\', \'{}\', \'{}\',
- \'{}\', \'{}\')
+"file", "size", "status", "not_time", "parts") VALUES (\'{}\', \'{}\',
+ \'{}\', \'{}\', \'{}\', 0)
 '''
 
 UPDATE_BASE = '''UPDATE "pynot_eventnotification" SET "status"=\'{}\',
@@ -19,6 +19,9 @@ MARK_BASE = '''UPDATE "pynot_eventnotification" SET "status"=\'{}\',
 
 PART_BASE = '''UPDATE "pynot_eventnotification" SET "parts"="parts" + 1,
 "not_time"=\'{}\' WHERE "file" = \'{}\'
+'''
+
+TRUNCATE_BASE = '''TRUNCATE pynot_eventnotification
 '''
 
 COMPLETE, PENDING, PROCESSING = 'COMPLETE', 'PENDING', 'PROCESSING'
@@ -54,3 +57,7 @@ def _mark_part(file):
 
 def _update_status(file):
     pass
+
+
+def _truncate_table():
+    return TRUNCATE_BASE
