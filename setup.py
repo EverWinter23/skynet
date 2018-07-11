@@ -27,7 +27,7 @@ with open("README.md", "r") as desc:
 
 setuptools.setup(
     name="skylark-skynet",
-    version="1.0.0a1",          # TODO: marks --first alpha Release on pypi
+    version="1.0.0a3",          # TODO: marks --first alpha Release on pypi
     author="Rishabh Mehta",
     author_email="eternal.blizzard23@gmail.com",
     description="Sync folder to services like aws-s3, using resumable uploads.",
