@@ -35,6 +35,6 @@ def get_logger(dirpath, level=logging.INFO):
     filepath = os.path.join(dirpath, 'skynet.log')
     logFormat = '[%(levelname)s %(filename)s %(lineno)d]: %(message)s'
     logging.basicConfig(filename=filepath, level=level,
-                        filemode='w', format=logFormat)
+                        filemode='a', format=logFormat)
 
     return logging.getLogger('skynet')
