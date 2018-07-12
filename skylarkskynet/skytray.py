@@ -147,7 +147,7 @@ class Skytray(QMainWindow):
         # NOTE: Useful for debugging
         # self._menu.addAction(self._status_action)
         # self._menu.addAction(self._edit_action)
-        self._menu.addAction(self._debug_action)
+        # self._menu.addAction(self._debug_action)
         # self._menu.addAction(self._erase_action)
         # self._menu.addAction(self._restart_action)
         self._menu.addAction(self._quit_action)
@@ -184,6 +184,9 @@ class Skytray(QMainWindow):
             self._upload_action.setIcon(getIcon(UPLOAD_ICON))
 
     def _upload_stop(self):
+
+        self._tray.showMessage('Skynet',
+                               'May take some time to stop uploading.')
         try:
             # signal skynet to stop
             self._thread_skynet_._service_shutdown(signal.SIGINT, None)
@@ -196,7 +199,7 @@ class Skytray(QMainWindow):
 
     def _edit_config(self):
         self._open_path(self._config_file)
-     
+
     def _open_skynetdir(self):
         self._open_path(self._sync_dir)
 
@@ -209,10 +212,10 @@ class Skytray(QMainWindow):
     def _erase_db(self):
         # stop uploading first
         if self._upload_action.text() == STOP_UPLOADING:
-            self._tray.showMessage('Skynet', 
-                       'Cannot erase database while uploading.')
+            self._tray.showMessage('Skynet',
+                                   'Cannot erase database while uploading.')
             return
-                
+
         # erase remote database, could throw connection error
         try:
             notifier = Notifier(db_path=skyconf.DB_PATH)
@@ -221,13 +224,12 @@ class Skytray(QMainWindow):
         except Exception as error:
             self._logger.info('Could not delete remote DB.')
             self._logger.error('Cause: {}'.format(error))
-        
+
         import shutil
         # erase local database and all info stored within it
         if os.path.exists(skyconf.DB_PATH):
             shutil.rmtree(skyconf.DB_PATH)
             self._logger.info('Local database deleted.')
-
 
     @staticmethod
     def _open_path(path):
@@ -242,6 +244,9 @@ class Skytray(QMainWindow):
         if self._upload_action.text() == STOP_UPLOADING:
             self._upload_stop()
         self._logger.info('Exiting.')
+        self._tray.showMessage('Skynet',
+                               'May take some time to exit.')
+
         qApp.exit()
 
 
