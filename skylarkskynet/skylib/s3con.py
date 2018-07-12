@@ -66,7 +66,7 @@ class S3Con:
     """
 
     def __init__(self, bucket_name, key_id, secret_key, region,
-                 db_path, _m_part=True, _xthreads=5):
+                 db_path, _m_part=True, _xthreads=1):
 
         self._client = client('s3', aws_access_key_id=key_id,
                               aws_secret_access_key=secret_key)
@@ -286,7 +286,7 @@ class S3Con:
 
         return self._xparts[UPLOAD_ID]
 
-    def _mark_part(src_path, self, part_id, _lock, result):
+    def _mark_part(self, src_path, part_id, _lock, result):
         """
         Marks the part as uploaded by removing
         it from the list of parts to be uploaded.
