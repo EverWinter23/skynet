@@ -76,6 +76,8 @@ python-libraries. Make sure you're working with **PYTHON 3.6.**
       $ skytray
 
 
+## SKYWATCH
+
 Now, that you have installed the `skylark-skynet` python package, you'll need to setup
  **skywatch**, --the Django-app for monitoring progress remotely.
 
@@ -91,8 +93,9 @@ framework.
 
       $ python manage.py makemigrations
       $ python manage.py runserver
+  
 
-
+<img align="right" src="screenshots/skywatch.png">
 
 
 After you're done with that, now you need to configure your setup. You can do that by using
