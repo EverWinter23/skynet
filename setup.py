@@ -33,7 +33,7 @@ setuptools.setup(
     description="Sync folder to services like aws-s3, using resumable uploads.",
     long_description=long_description,
     # long_description_content_type="text/markdown",
-    url="https://github.com/EverWinter23/skynet",
+    url="https://github.com/EverWinter23/skylark-skynet",
     packages=setuptools.find_packages(),
     python_requires='>=3',
     license="Apache License 3.0",
