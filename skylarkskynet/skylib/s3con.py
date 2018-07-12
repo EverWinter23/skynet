@@ -66,7 +66,7 @@ class S3Con:
     """
 
     def __init__(self, bucket_name, key_id, secret_key, region,
-                 db_path, _m_part=True, _xthreads=1):
+                 db_path, _m_part=True, _xthreads=5):
 
         self._client = client('s3', aws_access_key_id=key_id,
                               aws_secret_access_key=secret_key)
@@ -189,13 +189,13 @@ class S3Con:
 
         # upload x parts simultaneously
         while self._xparts[XPARTS]:
-            logging.info('Parts: {}'.format(self._xparts[XPARTS]))
+            # logging.info('Parts: {}'.format(self._xparts[XPARTS]))
+
             _num_parts_ = len(self._xparts[XPARTS])
             _threads_ = []
 
             _thread_count = min(self._xthreads, _num_parts_)
             _lock = Lock()
-            logging.info('Using {} \'threads\''.format(_thread_count))
 
             for x in range(_thread_count):
                 _threads_.append(Thread(target=self._upload_part,
@@ -316,9 +316,9 @@ class S3Con:
 
             # sync only after noth changes have been written
             self._xparts.sync()
-        # logging.info('part_id={} uploaded.'.format(part_id))
+        logging.info('part_id={} uploaded.'.format(part_id))
         # uncomment for listing parts uploaded to the bucket
-        logging.info(self._xparts[XPARTS])
+        # logging.info(self._xparts[XPARTS])
 
     def _abort_parts(self, key):
         """
