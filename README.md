@@ -85,8 +85,12 @@ framework.
 + Clone the **skywatch** repository. Register an app on heroku, attach a PostgresDB to it.
 + In Linux, in your ~/.bashrc add the following line:
     
-    export DATABASE_URL=$(heroku config:get DATABASE_URL -a your-appname)
+      export DATABASE_URL=$(heroku config:get DATABASE_URL -a your-appname)
 
++ All systems go.
+
+      $ python manage.py makemigrations
+      $ python manage.py runserver
 
 
 
