@@ -178,7 +178,7 @@ class SkyNet(Thread):
                     logging.info('The scheduled actions have been paused.')
             else:
                 logging.info('_exec slept->{}'.format(datetime.now()))
-                sleep(5)  # if we have a handler --sleep for 5 minutes
+                sleep(60)  # if we have a handler --sleep for 5 minutes
                 logging.info('_exec got up->{}'.format(datetime.now()))
     
     def _get_connection(self):
