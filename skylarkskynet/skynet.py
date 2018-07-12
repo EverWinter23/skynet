@@ -180,7 +180,7 @@ class SkyNet(Thread):
                 logging.info('_exec slept->{}'.format(datetime.now()))
                 sleep(60)  # if we have a handler --sleep for 5 minutes
                 logging.info('_exec got up->{}'.format(datetime.now()))
-    
+
     def _get_connection(self):
         """
         TODO: Add desc
@@ -214,7 +214,7 @@ class SkyNet(Thread):
             except Exception as error:
                 logging.error('Cause: {}'.format(error))
                 logging.info('_get_con slept->{}'.format(datetime.now()))
-                sleep(5)  # check every five minutes TODO: testing for 5sec
+                sleep(120)  # check every 2 minutes TODO: testing for 5sec
                 logging.info('_get_con got up->{}'.format(datetime.now()))
                 continue
 
@@ -240,7 +240,7 @@ class SkyNet(Thread):
             except Exception as error:
                 logging.error('Cause: {}'.format(error))
                 logging.info('_get_s3con slept->{}'.format(datetime.now()))
-                sleep(5)  # check every five minutes TODO: testing for 5sec
+                sleep(120)  # check every 2 minutes TODO: testing for 5sec
                 logging.info('_get_s3con got up->{}'.format(datetime.now()))
                 continue
 
@@ -249,10 +249,10 @@ class SkyNet(Thread):
         TODO: Add desc
         """
         # logs params passed to the Watcher --useful for debugging
-        logging.info('ignore_patterns={}'.format(
-            self.config[SYNC]['ignore_patterns']))
-        logging.info('complete_sync={}'.format(
-            self.config[SYNC]['complete_sync']))
+        # logging.info('ignore_patterns={}'.format(
+        #    self.config[SYNC]['ignore_patterns']))
+        # logging.info('complete_sync={}'.format(
+        #    self.config[SYNC]['complete_sync']))
 
         ignore_patterns = list(self.config[SYNC]['ignore_patterns'].split(' '))
         return Watcher(complete_sync=self.config[SYNC]['complete_sync'],
@@ -264,14 +264,14 @@ class SkyNet(Thread):
         TODO: Add desc
         """
         # logs params passed to the Mapper --useful for debugging
-        logging.info('local_dir={}'.format(
-            self.config[SYNC]['local_dir']))
-        logging.info('local_root={}'.format(
-            self.config[SYNC]['local_root']))
-        logging.info('remote_root={}'.format(
-            self.config[SYNC]['remote_root']))
-        logging.info('remote_dir={}'.format(
-            self.config[SYNC]['remote_dir']))
+        # logging.info('local_dir={}'.format(
+        #     self.config[SYNC]['local_dir']))
+        # logging.info('local_root={}'.format(
+        #     self.config[SYNC]['local_root']))
+        # logging.info('remote_root={}'.format(
+        #     self.config[SYNC]['remote_root']))
+        # logging.info('remote_dir={}'.format(
+        #     self.config[SYNC]['remote_dir']))
 
         return Mapper(local_root=self.config[SYNC]['local_root'],
                       local_dir=self.config[SYNC]['local_dir'],
@@ -280,7 +280,7 @@ class SkyNet(Thread):
 
     def _service_shutdown(self, signum, frame):
         logging.info('Caught Signal: {}'.format(signum))
-        
+
         # NOTE: SkyNet keeps monitoring the directory for changes
         # self._thread_observer_.stop()
         # logging.info('Observer Stopped.')
@@ -289,9 +289,9 @@ class SkyNet(Thread):
         self._thread_handler_._is_running = False
         logging.info('Handler Stopped.')
         logging.info('Notifier Stopped.')
-        
+
         self._shutdown_flag.set()
-        
+
         raise SkyNetServiceExit
 
 
