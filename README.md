@@ -1,5 +1,7 @@
 # README
 
+**ALPHA ONE Supports Windows, Linux and Mac**
+
 `skylark-skynet` combines together the services provided by `skynet` and integrates
 it with progress monitoring system --`skywatch` It provides an easy and efficient
 way to upload the files to remote storager services like amazon s3, or sftp servers.
