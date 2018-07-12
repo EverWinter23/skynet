@@ -205,8 +205,37 @@
   efficiency, I'd reccommend keeping them under 10.
 + Started working on updating the progress of the multi-part uploads
 
-## 6th July 2018 Wednesday
+### 6th July 2018 Friday
 + Made schema changes to Django-app **skywatch** for partial upload monitoring.
 + This will enable the user to monitor the progress of a huge file instead of
   vague status icons.
 + Working on integrating it with skynet.py
+
+
+### 9th July 2018 Monday
++ Notification support for multipart uploads added.
++ pep8 stds --comply with pep8 guidelines, using coala patches.
++ Added docstring to functions.
+
+
+### 8th July 2018 Tuesday
++ Started working on a system tray --systray.py which provides all controls in a tray.
++ The tray now, has functions to edit the config, open the sync dir, start and stop
+  the uploading process and open the log, just from the tray menu.
++ Made handler and notifier daemons so that they stop when their parent processes
+  stop.
++ Using signals --SIGINT and singal handler to stop the skynet thread instance. 
+
+### 11th July 2018 Wednesday
++ Started working on setup.py for easy distribution. 
++ Released the package on testpypi and replaced imports with relative imports.
++ Tested the pkg out linux env, everything works as expected.
++ Deployed the project on windows, works well and is easy to setup.
++ Made changes to skywatch to display accurate progress of multi-part uploads.
+
+### 12th July 2018 Thursday
++ Minor changes and bug fixes. Will be testing the module with a file of size greater
+  than 1GB to test multipart uploads and remote progress monitoring.
++ Should the first-time sync crash and all  the file-paths cannot be written to the
+  database, the module will not upload the files which could not be written to the DB.
+
