@@ -1,7 +1,8 @@
 # README
 
 `skylark-skynet` combines together the services provided by `skynet` and integrates
-it with progress monitoring system --`skywatch`.
+it with progress monitoring system --`skywatch` It provides an easy and efficient
+way to upload the files to remote storager services like amazon s3, or sftp servers.
 
 <img align="right" width="450" height="270" src="screenshots/skytray.png">
 
@@ -48,15 +49,47 @@ it with progress monitoring system --`skywatch`.
 The very first thing you need to do is cloning the repository and installing the required
 python-libraries. Make sure you're working with **PYTHON 3.6.**
 
-    $ pip install skylark-skynet
++ Cone the **skylark-skynet** repo.
++ Install **skynet** using:
+
+      $ python setup.py
+      # Please not if your developing the module, USE the following cmd
+      $ pip install -e . [<-- this little thing is important]
+      # skynet will be installed in the EDITABLE mode, any changes you make
+      # will reflect to your installation, makes deployment on other systems
+      # much easier.
+
++ On Linux, in your ~/.bashrc add the following line (for sending notifications)
+
+      export DATABASE_URL=$(heroku config:get DATABASE_URL -a your-appname)
+
++ On Windows, in your powershell, 
+    
+      Env:DATABASE_URL=$(heroku config:get DATABASE_URL -a your-appname)
+
++ Run **skynet**
+    
+      $ skynet --config [SERVICE]
+
++ Run the **skytray** app.
+    
+      $ skytray
+
 
 Now, that you have installed the `skylark-skynet` python package, you'll need to setup
  **skywatch**, --the Django-app for monitoring progress remotely.
 
 We'll host this app on Heroku with Heroku-Postgres for our Database and Django for the web
-framework.
+framework. 
 
->NOTE: Will add later.
++ Clone the **skywatch** repository. Register an app on heroku, attach a PostgresDB to it.
++ In Linux, in your ~/.bashrc add the following line:
+    
+    export DATABASE_URL=$(heroku config:get DATABASE_URL -a your-appname)
+
+
+
+
 
 After you're done with that, now you need to configure your setup. You can do that by using
 cli. Navigate to the dir where you cloned the repo and execute the following command. 
