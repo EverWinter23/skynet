@@ -103,12 +103,12 @@ class Notifier(Thread):
         with self._con.cursor() as cursor:
             cursor.execute(queries._mark_processing(entry['src_path']))
 
-    def _mark_part(self, entry):
+    def _mark_part(self, src_path):
         """
         Updates number of 'parts' uploaded of mulitpart uploads.
         """
         with self._con.cursor() as cursor:
-            cursor.execute(queries._mark_part)
+            cursor.execute(queries._mark_part(src_path))
 
     def _load_cursor(self):
         """
