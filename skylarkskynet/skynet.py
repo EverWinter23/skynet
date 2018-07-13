@@ -12,7 +12,13 @@ from datetime import datetime
 from configparser import ConfigParser
 from watchdog.observers import Observer
 
-# pckg imports
+# lib pckg imports
+# NOTE: Keep the imports relative, easier for
+# distribution and installation on other computers
+# Install the module in editable mode. Then you
+# can make changes without caring about distribution
+# and other plaatforms.
+
 from .skylib.s3con import S3Con
 from .skylib.mapper import Mapper
 from .skylib.sftpcon import SFTPCon
@@ -27,15 +33,19 @@ SERVICES = [SFTP, S3]
 
 class SkyNet(Thread):
     """
+    The SkyNet class makes use of Observer to monitor
+    dir for changes, Watcher to record all file system
+    events, Handler to execute corresponding actions
+    --mostly upload the files, and a Notifier to send the
+    notifications.
+
     parameters
         config_path: str
             path to the config file
 
         service: str
             remote storage service, supported services
-            are S3, SFTP    skynet = SkyNet(config=skyconf._get_config(),
-                    service=args.run_with,
-                    db_path=skyconf.DB_PATH)
+            are S3, SFTP
 
         db_path: str
             path to the database where actions are
@@ -125,7 +135,8 @@ class SkyNet(Thread):
 
     def _stop_execution(self):
         """
-        TODO: Add desc
+        Only for testing purposes, when you're running the
+        service using python and not the command-line-interface.
         """
         logging.info('Stopping _thread_observer_')
         # self._thread_observer_.stop()
@@ -143,7 +154,9 @@ class SkyNet(Thread):
 
     def _start_execution(self):
         """
-        TODO: Add desc
+        Starts uploading files to the remote storage. If the connection
+        drops mid-transfer, it keeps on checking for the connection to
+        come back and when it does, it carries out the recorded actions.
         """
         # start the daemon
         logging.info('Daemon started.')
@@ -183,7 +196,8 @@ class SkyNet(Thread):
 
     def _get_connection(self):
         """
-        TODO: Add desc
+        Returns an instance of XCon class, --X stands for
+        services supported
         """
         logging.info('Obtaining Connection.')
         if self._service_type == SFTP:
@@ -194,7 +208,8 @@ class SkyNet(Thread):
 
     def _get_sftp_con(self):
         """
-        TODO: Add desc
+        Returns instance of SFTPCon class. Uses polling to
+        until connection is established.
         """
         sftpcon = None
         while True:
@@ -220,7 +235,8 @@ class SkyNet(Thread):
 
     def _get_s3con(self):
         """
-        TODO: Add desc
+        Returns instance of S3Con class. Uses polling to
+        until connection is established.
         """
         s3con = None
         while True:
@@ -246,7 +262,7 @@ class SkyNet(Thread):
 
     def _get_watcher(self):
         """
-        TODO: Add desc
+        Returns an instance of Watcher class.
         """
         # logs params passed to the Watcher --useful for debugging
         # logging.info('ignore_patterns={}'.format(
@@ -261,7 +277,7 @@ class SkyNet(Thread):
 
     def _get_mapper(self):
         """
-        TODO: Add desc
+        Return an isntance of Mapper class
         """
         # logs params passed to the Mapper --useful for debugging
         # logging.info('local_dir={}'.format(
@@ -279,6 +295,13 @@ class SkyNet(Thread):
                       remote_dir=self.config[SYNC]['remote_dir'])
 
     def _service_shutdown(self, signum, frame):
+        """
+        This shuts down SkyNet when it receves SIGINT signal
+        from an external wrapper. However, the observer keeps
+        on monitoring the directory for changes until that
+        external process is stopped. It may take some time to
+        shutdown all services.
+        """
         logging.info('Caught Signal: {}'.format(signum))
 
         # NOTE: SkyNet keeps monitoring the directory for changes
