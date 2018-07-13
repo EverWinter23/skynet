@@ -69,11 +69,22 @@ python-libraries. Make sure you're working with **PYTHON 3.6.**
     
       Env:DATABASE_URL=$(heroku config:get DATABASE_URL -a your-appname)
 
+After you're done with that, now you need to configure your setup. You can do that by using
+cli. Navigate to the dir where you cloned the repo and execute the following command. 
+Supported services are S3 and SFTP. The cli will guide you through the complete config for
+the service you selected. Should you screw the config during this, you can go ahead and edit
+the config file using any text editor.  **Refer to README.md, if you get stuck during the 
+Sync Configration, because mapping can be tricky.**  Other than that, it's pretty straight
+forward.
+
 + Run **skynet**
     
       $ skynet --config [SERVICE]
 
-+ Run the **skytray** app.
+**NOTE:** You can aslo pass empty params, keep on pressing enter when you're done, go to the
+place where the config was saved and edit the config there.
+
++ Run the **skytray** app --only after configuring **skywatch**.
     
       $ skytray
 
@@ -98,20 +109,6 @@ framework.
   
 
 <img align="right" src="screenshots/skywatch.png">
-
-
-After you're done with that, now you need to configure your setup. You can do that by using
-cli. Navigate to the dir where you cloned the repo and execute the following command. 
-Supported services are S3 and SFTP. The cli will guide you through the complete config for
-the service you selected. Should you screw the config during this, you can go ahead and edit
-the config file using any text editor.  **Refer to README.md, if you get stuck during the 
-Sync Configration, because mapping can be tricky.**  Other than that, it's pretty straight
-forward.
-
-    $ skynet --config [SERVICE]
-
-**NOTE:** You can aslo pass empty params, keep on pressing enter when you're done, go to the
-place where the config was saved and edit the config there.
 
 All Done? Now, we're ready. Just execute the following command.
 
